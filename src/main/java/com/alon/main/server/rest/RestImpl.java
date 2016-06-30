@@ -17,7 +17,7 @@ public class RestImpl {
 	public RecommenderService recommenderService;
 
 	@GET
-	@Path("/test")
+	@Path("{id}")
 	public Response getCombinedMsg() {
 		return Response.status(200).entity("zip").build();
 	}

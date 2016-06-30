@@ -1,0 +1,11 @@
+.classpath
+.project
+.settings/
+target/
+.idea/**
+.idea/vcs.xml
+.idea/libraries/Maven__org_springframework_spring_core_3_0_0_RC3.xml
+.idea/libraries/Maven__org_spark_project_spark_unused_1_0_0.xml
+hs_err_pid42667.log
+hs_err_pid43415.log
+spark-warehouse/

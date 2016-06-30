@@ -1,0 +1,5 @@
+Run spark:
+1. go to: /Users/alon_ss/Learning/Recommender/spark-1.6.1-bin-hadoop2.6
+2. "./bin/spark-shell --master local[2]" // run spark with 2 nodes
+3. localhost:4040/jobs
+
