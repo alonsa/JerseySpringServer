@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.alon.main.server.Const.Consts.*;
 import static com.mongodb.client.model.Updates.set;
 
 /**
@@ -26,7 +27,6 @@ import static com.mongodb.client.model.Updates.set;
 public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
 
     // sudo mongod --dbpath /usr/local/Cellar/mongodb/data/db
-
 
     private Datastore datastore;
 
@@ -38,7 +38,7 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
     @PostConstruct
     @Async
     protected void init() {
-        MongoClient mongo = new MongoClient("localhost", 27017);
+        MongoClient mongo = new MongoClient(HOST, PORT);
 
         Morphia morphia = new Morphia();
         morphia.mapPackage(typeParameterClass.getCanonicalName());
@@ -62,14 +62,14 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
     @Override
     public List<T> getByInnerIds(List<Integer> list) {
         Query<T> query = datastore.createQuery(typeParameterClass);
-        query.field("innerId").in(list);
+        query.field(INNER_ID_FIELD).in(list);
         return query.asList();
     }
 
     @Override
     public T getByInnerId(Integer id) {
         Query<T> query = datastore.createQuery(typeParameterClass);
-        query.field("innerId").equal(id);
+        query.field(INNER_ID_FIELD).equal(id);
         return query.get();
     }
 
@@ -104,7 +104,7 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
     public UpdateResults updateByField(T entity, Map<String, Object> map) {
 
 
-        Query<T> query = datastore.createQuery(typeParameterClass).field("_id").equal(entity.getId());
+        Query<T> query = datastore.createQuery(typeParameterClass).field(ID_FIELD).equal(entity.getId());
         UpdateOperations<T> ops = datastore.createUpdateOperations(typeParameterClass);
         for (Map.Entry<String, Object> entry: map.entrySet()){
             ops.set(entry.getKey(), entry.getValue());

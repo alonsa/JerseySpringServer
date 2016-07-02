@@ -24,7 +24,8 @@ public  class Consts {
     public static final String USER_FEATURES_PATH = OUTPUT_DIR + "/userFeatures";
     public static final String PRODUCT_FEATURES_PATH = OUTPUT_DIR + "/productFeatures";
     public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest";
-//    public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
+
+    // public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
     public static final String RATINGS_PATH = BASE_PATH + "/ratings.csv";
     public static final String MODEL_PATH = OUTPUT_DIR + "/model";
     public static final Pattern COMMA = Pattern.compile(",");
@@ -32,6 +33,17 @@ public  class Consts {
     // Dao
     public static final String MOVIES_PATH = BASE_PATH + "/movies.csv";
     public static final Pattern VERTICAL_BAR = Pattern.compile("\\|");
+    public static final String HOST = "localhost";
+    public static final Integer PORT = 27017;
+    public static final String VOD = "vod";
+
+    // BaseEntity
+    public static final String ID_FIELD = "_id";
+
+    // Movie
+    public static final String INNER_ID_FIELD = "innerId";
+
+
 
     // Player
     public static final Integer RECENTLY_WATCH_MAX_SIZE = 4;

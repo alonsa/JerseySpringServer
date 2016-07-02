@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+import static com.alon.main.server.Const.Consts.VOD;
+
 /**
  * Created by alon_ss on 6/26/16.
  */
@@ -22,7 +24,7 @@ public final class MovieMorphiaDaoImpl extends MorphiaDao<Movie> {
 
     @Override
     protected String getDbName() {
-        return "vod";
+        return VOD;
     }
 
 }

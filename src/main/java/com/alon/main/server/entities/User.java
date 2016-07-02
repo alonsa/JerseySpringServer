@@ -18,6 +18,8 @@ public class User implements Serializable{
     private String name;
     private CircularFifoQueue<Integer> recentlyWatch = new CircularFifoQueue<Integer>(RECENTLY_WATCH_MAX_SIZE);
 
+    public User() {}
+
     public User(ObjectId id, Integer innerId, String name) {
         this.id = id;
         this.name = name;

@@ -1,5 +1,6 @@
 package com.alon.main.server.entities;
 
+import com.alon.main.server.Const.MovieSite;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Embedded;
@@ -13,21 +14,21 @@ import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
  */
 @Embedded
 public class ExternalId implements Serializable{
-    private String siteName;
+    private MovieSite siteName;
     private String id;
 
     public ExternalId() {}
 
-    public ExternalId(String siteName, String id) {
+    public ExternalId(MovieSite siteName, String id) {
         this.siteName = siteName;
         this.id = id;
     }
 
-    public String getSiteName() {
+    public MovieSite getSiteName() {
         return siteName;
     }
 
-    public void setSiteName(String siteName) {
+    public void setSiteName(MovieSite siteName) {
         this.siteName = siteName;
     }
 

@@ -1,5 +1,6 @@
-package com.alon.main.server.dao.movie;
+package com.alon.main.server.dbMigrtor;
 
+import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.service.RecommenderService;
@@ -7,14 +8,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import scala.Tuple2;
 
 import javax.annotation.PostConstruct;
-import java.net.URI;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static com.alon.main.server.Const.Consts.COMMA;
 import static com.alon.main.server.Const.Consts.MOVIES_PATH;
@@ -64,12 +60,12 @@ public final class MovieMemoryDaoImpl {//implements Dao<Movie> {
 
         List<ExternalId> externalIds = new ArrayList<>();
 
-        externalIds.add(new ExternalId("IMDB", tok[3]));
+        externalIds.add(new ExternalId(MovieSite.IMDB, tok[3]));
 
         Optional<String> trailer = Optional.empty();
 
         if (tok.length >=5){
-            externalIds.add(new ExternalId("TMDB", tok[4]));
+            externalIds.add(new ExternalId(MovieSite.TMDB, tok[4]));
         }
 
         return new Movie(id, title, genres, externalIds);
