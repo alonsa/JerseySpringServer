@@ -109,10 +109,10 @@ public final class RecommenderService {
         @Override
         public Rating call(String line) {
             String[] tok = COMMA.split(line);
-            int x = Integer.parseInt(tok[0]);
-            int y = Integer.parseInt(tok[1]);
+            int userId = Integer.parseInt(tok[0]);
+            int movieId = Integer.parseInt(tok[1]);
             double rating = Double.parseDouble(tok[2]);
-            return new Rating(x, y, rating);
+            return new Rating(userId, movieId, rating);
         }
     }
 

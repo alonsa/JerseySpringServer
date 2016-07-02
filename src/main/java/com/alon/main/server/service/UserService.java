@@ -4,6 +4,7 @@ import com.alon.main.server.dao.Dao;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.entities.User;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,22 +27,22 @@ public class UserService {
     @Autowired
     public Dao<Movie> movieDao;
 
-    @Autowired
-    public Dao<User> userDao;
-
-    public List<Movie> recommendForUser(Integer userId){
-        List<Integer> movieIds = recommenderService.recommend(userId);
-        List<Movie> movies = movieDao.getByIds(movieIds);
-        User user = userDao.getById(userId);
-        CircularFifoQueue<Integer> recentlyWatch = user.getRecentlyWatch();
-        Stream<Movie> movieStream = movies.stream().filter(movie -> recentlyWatch.contains(movie.getId())).limit(RESPONSE_NUM);
-        List<Movie> recommendMovies = movieStream.collect(Collectors.toList());
-
-        // just for demo
-        movieStream.forEach(movie ->  user.addToRecentlyWatch(movie.getId()));
-
-        return recommendMovies;
-    }
+//    @Autowired
+//    public Dao<User> userDao;
+//
+//    public List<Movie> recommendForUser(ObjectId userId){
+////        User user = userDao.getById(userId);
+//        List<Integer> movieIds = recommenderService.recommend(user.getInnerId());
+//        List<Movie> movies = movieDao.getByInnerIds(movieIds);
+//        CircularFifoQueue<Integer> recentlyWatch = user.getRecentlyWatch();
+//        Stream<Movie> movieStream = movies.stream().filter(movie -> recentlyWatch.contains(movie.getInnerId())).limit(RESPONSE_NUM);
+//        List<Movie> recommendMovies = movieStream.collect(Collectors.toList());
+//
+//        // just for demo
+//        movieStream.forEach(movie ->  user.addToRecentlyWatch(movie.getInnerId()));
+//
+//        return recommendMovies;
+//    }
 
 
 

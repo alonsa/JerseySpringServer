@@ -7,6 +7,7 @@ import com.alon.main.server.movieProvider.MovieProvider;
 import com.alon.main.server.service.RecommenderService;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ import static com.alon.main.server.Const.Consts.*;
  * Created by alon_ss on 6/26/16.
  */
 @Service
-public final class DaoMemoryUserImpl implements Dao<User> {
+public final class DaoMemoryUserImpl { //implements Dao<User> {
 
     private Map<Integer, User> users = new HashMap<>();
 
@@ -42,7 +43,7 @@ public final class DaoMemoryUserImpl implements Dao<User> {
     }
 
     public User getById(Integer id){
-        return users.putIfAbsent(id, new User(id, id.toString()));
+        return users.putIfAbsent(id, new User(ObjectId.get(), id, id.toString()));
     }
 
 

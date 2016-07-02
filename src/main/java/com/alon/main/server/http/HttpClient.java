@@ -16,6 +16,7 @@ public class HttpClient {
 
     public static CompletableFuture<Response> call(String url){
 
+        System.out.println("Make async http call to: " + url);
         return asyncHttpClient
                 .prepareGet(url)
                 .execute().toCompletableFuture();

@@ -10,8 +10,8 @@
     <context:component-scan base-package="com.alon.main.server" />
     <!--<context:component-scan base-package="com.alon.main.server.service" />-->
 
-    <!--<bean id="recommenderService" class="com.alon.main.server.service.RecommenderService" />-->
-    <!--<bean id="javaWordCount" class="com.alon.main.server.service.JavaWordCount" />-->
+    <!--<bean innerId="recommenderService" class="com.alon.main.server.service.RecommenderService" />-->
+    <!--<bean innerId="javaWordCount" class="com.alon.main.server.service.JavaWordCount" />-->
 
 
 </beans>

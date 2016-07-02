@@ -23,7 +23,8 @@ public  class Consts {
     public static final String OUTPUT_DIR = "/Users/alon_ss/Learning/Recommender/outputDir";
     public static final String USER_FEATURES_PATH = OUTPUT_DIR + "/userFeatures";
     public static final String PRODUCT_FEATURES_PATH = OUTPUT_DIR + "/productFeatures";
-    public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
+    public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest";
+//    public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
     public static final String RATINGS_PATH = BASE_PATH + "/ratings.csv";
     public static final String MODEL_PATH = OUTPUT_DIR + "/model";
     public static final Pattern COMMA = Pattern.compile(",");

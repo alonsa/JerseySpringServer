@@ -4,7 +4,6 @@
 	<groupId>com.alon.common</groupId>
 	<dependencies>
 
-
 		<!-- Spring 3 dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -68,7 +67,7 @@
 			<version>2.0.7</version>
 		</dependency>
 
-		// For CircularFifoQueue
+		<!--// For CircularFifoQueue-->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
@@ -81,6 +80,12 @@
 			<version>3.2.2</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.mongodb.morphia/morphia -->
+		<dependency>
+			<groupId>org.mongodb.morphia</groupId>
+			<artifactId>morphia</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 
 	</dependencies>
 
@@ -97,7 +102,7 @@
 
 	<repositories>
 		<repository>
-			<id>maven2-repository.java.net</id>
+			<innerId>maven2-repository.java.net</innerId>
 			<name>Java.net Repository for Maven</name>
 			<url>http://download.java.net/maven/2/</url>
 			<layout>default</layout>

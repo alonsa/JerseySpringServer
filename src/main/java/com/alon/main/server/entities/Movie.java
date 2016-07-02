@@ -4,33 +4,46 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Indexed;
 
 /**
  * Created by alon_ss on 6/28/16.
  */
-public class Movie implements Serializable{
-    private Integer id;
+
+@Entity
+public class Movie extends BaseEntity implements Serializable{
+
+    @Indexed(unique = true)
+    private Integer innerId;
+
     private String title;
+
     private String plot;
-    private String imdbId;
-    private String tmdbId;
-    private URI trailer;
+
+    private URI uri;
+
     private List<String> genres = new ArrayList<>();
 
-    public Movie(Integer id, String title, String imdbId, String tmdbId, List<String> genres) {
-        this.id = id;
+    private List<ExternalId> externalIds = new ArrayList<>();
+
+    public Movie(){};
+
+    public Movie(Integer id, String title, List<String> genres, List<ExternalId> externalIds) {
+
+        this.innerId = id;
         this.title = title;
-        this.imdbId = imdbId;
-        this.tmdbId = tmdbId;
+        this.externalIds = externalIds;
         this.genres = genres;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getInnerId() {
+        return innerId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setInnerId(Integer innerId) {
+        this.innerId = innerId;
     }
 
     public String getTitle() {
@@ -41,20 +54,20 @@ public class Movie implements Serializable{
         this.title = title;
     }
 
-    public String getImdbId() {
-        return imdbId;
+    public String getPlot() {
+        return plot;
     }
 
-    public void setImdbId(String imdbId) {
-        this.imdbId = imdbId;
+    public void setPlot(String plot) {
+        this.plot = plot;
     }
 
-    public String getTmdbId() {
-        return tmdbId;
+    public List<ExternalId> getExternalIds() {
+        return externalIds;
     }
 
-    public void setTmdbId(String tmdbId) {
-        this.tmdbId = tmdbId;
+    public void setExternalIds(List<ExternalId> externalIds) {
+        this.externalIds = externalIds;
     }
 
     public List<String> getGenres() {
@@ -65,11 +78,26 @@ public class Movie implements Serializable{
         this.genres = genres;
     }
 
-    public URI getTrailer() {
-        return trailer;
+    public URI getUri() {
+        return uri;
     }
 
-    public void setTrailer(URI trailer) {
-        this.trailer = trailer;
+    public void setUri(URI trailer) {
+        this.uri = trailer;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Movie{" +
+                "innerId=" + innerId +
+                ", title='" + title + '\'' +
+                ", plot='" + plot + '\'' +
+                ", uri=" + uri +
+                ", genres=" + genres +
+                ", externalIds=" + externalIds +
+                '}';
     }
 }
+
+

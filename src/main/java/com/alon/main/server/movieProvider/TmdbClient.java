@@ -50,6 +50,7 @@ public class TmdbClient  implements MovieProviderClient {
         try {
             return getFutureTrailer(vodId).get();
         } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
             return Optional.empty();
         }
     }

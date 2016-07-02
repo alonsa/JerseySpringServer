@@ -1,6 +1,7 @@
 package com.alon.main.server.entities;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.bson.types.ObjectId;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,20 +13,22 @@ import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
  * Created by alon_ss on 6/28/16.
  */
 public class User implements Serializable{
-    private Integer id;
+    private Integer innerId;
+    private ObjectId id;
     private String name;
     private CircularFifoQueue<Integer> recentlyWatch = new CircularFifoQueue<Integer>(RECENTLY_WATCH_MAX_SIZE);
 
-    public User(Integer id, String name) {
+    public User(ObjectId id, Integer innerId, String name) {
         this.id = id;
         this.name = name;
+        this.innerId = innerId;
     }
 
-    public Integer getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
@@ -35,6 +38,14 @@ public class User implements Serializable{
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getInnerId() {
+        return innerId;
+    }
+
+    public void setInnerId(Integer innerId) {
+        this.innerId = innerId;
     }
 
     public CircularFifoQueue<Integer> getRecentlyWatch() {
@@ -48,4 +59,7 @@ public class User implements Serializable{
     public void removeFromRecentlyWatch(Integer movieId) {
         recentlyWatch.remove(movieId);
     }
+
+
+
 }
