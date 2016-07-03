@@ -4,6 +4,7 @@ import com.alon.main.server.service.RecommenderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -11,13 +12,19 @@ import javax.ws.rs.core.Response;
 @Component
 public class RestImpl {
 
+	@PostConstruct
+	private void init(){
+		Integer t = 0;
+		t.toString();
+	}
+
 	//	http://localhost:8090/recommend/test
 
 	@Autowired
 	public RecommenderService recommenderService;
 
 	@GET
-	@Path("{id}")
+//	@Path("{id}")
 	public Response getCombinedMsg() {
 		return Response.status(200).entity("zip").build();
 	}
