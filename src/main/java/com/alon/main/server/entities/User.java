@@ -12,7 +12,7 @@ import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
 /**
  * Created by alon_ss on 6/28/16.
  */
-public class User implements Serializable{
+public class User extends BaseEntity implements Serializable{
     private Integer innerId;
     private ObjectId id;
     private String name;
