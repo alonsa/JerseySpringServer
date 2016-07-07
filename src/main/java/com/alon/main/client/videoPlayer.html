@@ -11,7 +11,7 @@
         }
 
         .video-container {
-            height: 50%;
+            height: 100%;
         }
 
         .video-frame {
@@ -27,23 +27,31 @@
 
         .btns-container {
             text-align: center;
+            display: flex;
+            justify-content : space-around;
         }
 
         .left-button {
             text-align: left;
-            width: 50%;
+            width: 25%;
 
         }
 
         .right-button {
             text-align: left;
-            width: 50%;
+            width: 25%;
 
         }
 
         .movie-body {
             background-color: rgba(0, 0, 0, 0.73);
             color: white;
+        }
+        
+        .button-header {
+            color: white;
+            text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+            font-weight: bold;
         }
 
         hr{
@@ -70,33 +78,31 @@
         <div class="btns-location">
             <div class="btns-container">
 
-
                 <div class="left-button">
-                    <div class=button-header>Now Playing:</div>
+                    <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
 
                     <hr>
 
                     <div class="movie-body" >
-                        <div class="first-movie-title" >First Movie Title</div>
+                        <div id="first-movie-title" >First Movie Title</div>
                         <div class="first-movie-plot" >First Movie Plot</div>
                     </div>
 
                 </div>
 
                 <div class="right-button">
-                    <div class=button-header>Next pic</div>
+                    <div class=button-header>&nbsp&nbsp&nbsp Next pic:</div>
 
                     <hr>
 
                     <div class="movie-body" >
-                        <div class="first-movie-title" >Second Movie Title</div>
+                        <div id="second-movie-title" >Second Movie Title</div>
                         <div class="first-movie-plot" >Second Movie Plot</div>
                     </div>
 
                 </div>
 
-
-                <button type="button" id="nowPlaying">nowPlaying</button>
+                <button type="button" id="nowPlaying"></button>
                 <button type="button" id="playingNext">playingNext</button>
             </div>
         </div>
@@ -109,11 +115,25 @@
 
 
 <script>
-    var url = "http://localhost:8090/recommend/247754";
+    var url = "http://localhost:8090/recommend/epgs/";
     var user;
     var room = "ROOM";
     var socket;
     var xmlhttp = new XMLHttpRequest();
+
+    var qs = (function(a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i)
+        {
+            var p=a[i].split('=', 2);
+            if (p.length == 1)
+                b[p[0]] = "";
+            else
+                b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    })(window.location.search.substr(1).split('&'));
 
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -121,11 +141,10 @@
             myFunction(myArr);
         }
     };
-    xmlhttp.open("GET", url, true);
-//    xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-//    xmlhttp.setRequestHeader('Access-Control-Allow-Methods', 'GET');
-    xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
 
+    var  parsedUrl = url + qs["userName"];
+    xmlhttp.open("GET", parsedUrl, true);
+    xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
 
     xmlhttp.send();
 
@@ -133,40 +152,26 @@
         var out = "";
         var i;
         for(i = 0; i < arr.length; i++) {
-            out += '<a href="' + arr[i].uri + '">' +
-                    arr[i].uri + '</a><br>';
+            out += '<a href="' + arr[i].uri + '">' + arr[i].uri + '</a><br>';
         }
+
+        document.getElementById("nowPlaying").innerHTML = arr[0].title;
+        document.getElementById('playingNext').innerHTML = arr[1].title;
+
+        document.getElementById("first-movie-title").innerHTML = arr[0].title;
+        document.getElementById('second-movie-title').innerHTML = arr[1].title;
+
         document.getElementById("id01").innerHTML = out;
     }
 
-
-
-
     window.onload = function () {
 
-        var qs = (function(a) {
-            if (a == "") return {};
-            var b = {};
-            for (var i = 0; i < a.length; ++i)
-            {
-                var p=a[i].split('=', 2);
-                if (p.length == 1)
-                    b[p[0]] = "";
-                else
-                    b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-            }
-            return b;
-        })(window.location.search.substr(1).split('&'));
+        localStorage.setItem("userName", qs["userName"]);
+        user = localStorage.getItem("userName");
+        localStorage.setItem("valUser", user);
 
-
-        localStorage.setItem("userName", qs["userName"])
-        user = localStorage.getItem("userName")
-        localStorage.setItem("valUser", user)
-
-        document.getElementById('playingNext').innerHTML=user;
-        document.getElementById('nowPlaying').innerHTML="user";
-
-
+//        document.getElementById('playingNext').innerHTML=user;
+//        document.getElementById('nowPlaying').innerHTML="user";
     }
 </script>
 
