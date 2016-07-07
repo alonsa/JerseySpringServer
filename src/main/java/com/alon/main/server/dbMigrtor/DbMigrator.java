@@ -1,45 +1,84 @@
 package com.alon.main.server.dbMigrtor;
 
-import com.alon.main.server.Const.MovieSite;
-import com.alon.main.server.dao.Dao;
-import com.alon.main.server.entities.ExternalId;
+import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.entities.Movie;
-import com.alon.main.server.service.RecommenderService;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
+import com.alon.main.server.movieProvider.MovieProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
 
-import static com.alon.main.server.Const.Consts.COMMA;
-import static com.alon.main.server.Const.Consts.MOVIES_PATH;
-import static com.alon.main.server.Const.Consts.VERTICAL_BAR;
-
 /**
  * Created by alon_ss on 6/26/16.
  */
-@Service //- Just to save all movies in DB
+//@Service //- Just to save all movies in DB
 public final class DbMigrator {
 
-//    @Autowired
-//	public MovieMemoryDaoImpl movieMemoryDaoImpl;
+    @Autowired
+	public MovieMemoryDaoImpl movieMemoryDaoImpl;
 
     @Autowired
-    public Dao<Movie> movieDao;
+    public BaseDao<Movie> movieBaseDao;
 
     @PostConstruct
     protected void init() {
+//        saveMovies(null);
+        addUrlToMovies();
+//        addDefaultUrlToMovies();
 
-        // take movies from xml file and save them in DB
-//        List<Movie> list = movieMemoryDaoImpl.getAll();
-//        movieDao.saveAll(list);
-//        list.toString();
+    }
 
+    private void addUrlToMovies() {
         // take movies from DB and add data from TMDB
-        Iterator<Movie> moviesIter = movieDao.getAll();
+        Integer numToSkip = 4600;
+        Iterator<Movie> moviesIter = movieBaseDao.getNoUrl(numToSkip);
+
+        MovieProvider movieProvider = new MovieProvider();
+
+        int i = numToSkip;
+        int updated = 0;
+
+        while (moviesIter.hasNext()){
+            Movie movie = moviesIter.next();
+
+            if (movie.getUri() == null){
+
+                System.out.println(i);
+                System.out.println(movie);
+
+                String trailer = movieProvider.getYouTubeTrailer(movie);
+
+                if (trailer != null){
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("uri", trailer);
+
+                    System.out.println("UPDATE trailer" + trailer);
+
+                    movieBaseDao.updateByField(movie, map);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                if ((updated % 20) == 0){
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                updated ++;
+            }
+
+            i++;
+        }
+    }
+
+    private void addDefaultUrlToMovies() {
+        // take movies from DB and add data from TMDB
+        Iterator<Movie> moviesIter = movieBaseDao.getAll();
 
         List<String> movieProvider = new ArrayList<>();
 
@@ -48,7 +87,6 @@ public final class DbMigrator {
         movieProvider.add("https://www.youtube.com/watch?v=hvha-7EvwNg");
         movieProvider.add("https://www.youtube.com/watch?v=kvg9GxWjgIw");
         movieProvider.add("https://www.youtube.com/watch?v=OT9HsNszYCI");
-
 
         int i = 0;
 
@@ -68,7 +106,7 @@ public final class DbMigrator {
 
                     System.out.println("UPDATE trailer" + trailer);
 
-                    movieDao.updateByField(movie, map);
+                    movieBaseDao.updateByField(movie, map);
 
 //                    try {
 //                        Thread.sleep(500);
@@ -78,15 +116,15 @@ public final class DbMigrator {
                 }
             }
 
-
-
-
             i++;
         }
+    }
 
-        String d  = "d";
-
-
+    private void saveMovies(Integer num) {
+        //         take movies from xml file and save them in DB
+        List<Movie> list = movieMemoryDaoImpl.getAll(num);
+        movieBaseDao.saveAll(list);
+        list.toString();
     }
 
 }

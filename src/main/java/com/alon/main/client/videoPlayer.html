@@ -1,0 +1,179 @@
+<html>
+
+<head>
+
+    <style>
+
+        .content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-container {
+            height: 50%;
+        }
+
+        .video-frame {
+            width: 100%;
+            height: 100%;
+        }
+
+        .btns-location {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .btns-container {
+            text-align: center;
+        }
+
+        .left-button {
+            text-align: left;
+            width: 50%;
+
+        }
+
+        .right-button {
+            text-align: left;
+            width: 50%;
+
+        }
+
+        .movie-body {
+            background-color: rgba(0, 0, 0, 0.73);
+            color: white;
+        }
+
+        hr{
+            border-width: 5px;
+            color: #8b282b;
+            border-color: #8b282b;
+            background-color: #8b282b;
+            margin-bottom: auto;
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+    <div class="content">
+        <div class="video-container">
+            <iframe class="video-frame"
+                    src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">
+            </iframe>
+        </div>
+
+        <div class="btns-location">
+            <div class="btns-container">
+
+
+                <div class="left-button">
+                    <div class=button-header>Now Playing:</div>
+
+                    <hr>
+
+                    <div class="movie-body" >
+                        <div class="first-movie-title" >First Movie Title</div>
+                        <div class="first-movie-plot" >First Movie Plot</div>
+                    </div>
+
+                </div>
+
+                <div class="right-button">
+                    <div class=button-header>Next pic</div>
+
+                    <hr>
+
+                    <div class="movie-body" >
+                        <div class="first-movie-title" >Second Movie Title</div>
+                        <div class="first-movie-plot" >Second Movie Plot</div>
+                    </div>
+
+                </div>
+
+
+                <button type="button" id="nowPlaying">nowPlaying</button>
+                <button type="button" id="playingNext">playingNext</button>
+            </div>
+        </div>
+
+    </div>
+
+
+
+<div id="id01"></div>
+
+
+<script>
+    var url = "http://localhost:8090/recommend/247754";
+    var user;
+    var room = "ROOM";
+    var socket;
+    var xmlhttp = new XMLHttpRequest();
+
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var myArr = JSON.parse(xmlhttp.responseText);
+            myFunction(myArr);
+        }
+    };
+    xmlhttp.open("GET", url, true);
+//    xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
+//    xmlhttp.setRequestHeader('Access-Control-Allow-Methods', 'GET');
+    xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
+
+
+    xmlhttp.send();
+
+    function myFunction(arr) {
+        var out = "";
+        var i;
+        for(i = 0; i < arr.length; i++) {
+            out += '<a href="' + arr[i].uri + '">' +
+                    arr[i].uri + '</a><br>';
+        }
+        document.getElementById("id01").innerHTML = out;
+    }
+
+
+
+
+    window.onload = function () {
+
+        var qs = (function(a) {
+            if (a == "") return {};
+            var b = {};
+            for (var i = 0; i < a.length; ++i)
+            {
+                var p=a[i].split('=', 2);
+                if (p.length == 1)
+                    b[p[0]] = "";
+                else
+                    b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+            }
+            return b;
+        })(window.location.search.substr(1).split('&'));
+
+
+        localStorage.setItem("userName", qs["userName"])
+        user = localStorage.getItem("userName")
+        localStorage.setItem("valUser", user)
+
+        document.getElementById('playingNext').innerHTML=user;
+        document.getElementById('nowPlaying').innerHTML="user";
+
+
+    }
+</script>
+
+
+
+
+
+
+</body>
+</html>

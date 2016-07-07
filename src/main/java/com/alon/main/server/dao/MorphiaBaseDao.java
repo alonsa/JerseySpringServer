@@ -6,7 +6,6 @@ import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
 import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.query.MorphiaIterator;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
@@ -18,21 +17,20 @@ import java.util.List;
 import java.util.Map;
 
 import static com.alon.main.server.Const.Consts.*;
-import static com.mongodb.client.model.Updates.set;
 
 /**
  * Created by alon_ss on 6/29/16.
  */
 
-public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
+public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T> {
 
     // sudo mongod --dbpath /usr/local/Cellar/mongodb/data/db
 
-    private Datastore datastore;
+    protected Datastore datastore;
 
     private Class<T> typeParameterClass = getTypeClass();
 
-    protected abstract Class<T> getTypeClass();
+    public abstract Class<T> getTypeClass();
     protected abstract String getDbName();
 
     @PostConstruct
@@ -48,9 +46,17 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
         datastore.ensureIndexes();
     }
 
+    public Long count() {
+        return datastore.getCount(getTypeClass());
+    }
+
+    protected Query<T> getQuery(){
+        return datastore.createQuery(typeParameterClass);
+    }
+
     @Override
     public List<T> getByIds(List<ObjectId> list) {
-        Query<T> query = datastore.get(typeParameterClass, list);
+        Query<T> query = getQuery();
         return query.asList();
     }
 
@@ -59,18 +65,14 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
         return datastore.get(typeParameterClass, id);
     }
 
-    @Override
-    public List<T> getByInnerIds(List<Integer> list) {
-        Query<T> query = datastore.createQuery(typeParameterClass);
-        query.field(INNER_ID_FIELD).in(list);
-        return query.asList();
-    }
-
-    @Override
-    public T getByInnerId(Integer id) {
-        Query<T> query = datastore.createQuery(typeParameterClass);
-        query.field(INNER_ID_FIELD).equal(id);
-        return query.get();
+    @Deprecated
+    public Iterator<T> getNoUrl(Integer skip) {
+        Query<T> query = getQuery();
+        query.field(URI_FIELD).doesNotExist();
+        if (skip != null){
+            query = query.offset(skip);
+        }
+        return query.iterator();
     }
 
     @Override
@@ -104,15 +106,13 @@ public abstract class MorphiaDao<T extends BaseEntity> implements Dao<T> {
     public UpdateResults updateByField(T entity, Map<String, Object> map) {
 
 
-        Query<T> query = datastore.createQuery(typeParameterClass).field(ID_FIELD).equal(entity.getId());
+        Query<T> query = getQuery().field(ID_FIELD).equal(entity.getId());
         UpdateOperations<T> ops = datastore.createUpdateOperations(typeParameterClass);
         for (Map.Entry<String, Object> entry: map.entrySet()){
             ops.set(entry.getKey(), entry.getValue());
         }
 
         return datastore.update(query, ops);
-
-
     }
 
 }

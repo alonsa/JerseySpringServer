@@ -13,13 +13,16 @@ import java.util.Map;
 /**
  * Created by alon_ss on 6/29/16.
  */
-public interface Dao<T> {
+public interface BaseDao<T> {
 
     public List<T> getByIds(List<ObjectId> list);
+
+    public Long count();
+
     public T getById(ObjectId id);
 
-    public List<T> getByInnerIds(List<Integer> list);
-    public T getByInnerId(Integer id);
+    @Deprecated
+    public Iterator<T> getNoUrl(Integer skip);
 
     public Key<T> save(T entity);
     public Iterable<Key<T>> saveAll(List<T> entity);

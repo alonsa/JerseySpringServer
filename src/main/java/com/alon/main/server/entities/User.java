@@ -12,18 +12,16 @@ import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
 /**
  * Created by alon_ss on 6/28/16.
  */
-public class User extends BaseEntity implements Serializable{
-    private Integer innerId;
-    private ObjectId id;
+public class User extends RecommandEntity implements Serializable{
+
     private String name;
-    private CircularFifoQueue<Integer> recentlyWatch = new CircularFifoQueue<Integer>(RECENTLY_WATCH_MAX_SIZE);
+
+    private CircularFifoQueue<ObjectId> recentlyWatch = new CircularFifoQueue<ObjectId>(RECENTLY_WATCH_MAX_SIZE);
 
     public User() {}
 
-    public User(ObjectId id, Integer innerId, String name) {
-        this.id = id;
+    public User(Integer innerId, String name) {
         this.name = name;
-        this.innerId = innerId;
     }
 
     public ObjectId getId() {
@@ -42,23 +40,15 @@ public class User extends BaseEntity implements Serializable{
         this.name = name;
     }
 
-    public Integer getInnerId() {
-        return innerId;
-    }
-
-    public void setInnerId(Integer innerId) {
-        this.innerId = innerId;
-    }
-
-    public CircularFifoQueue<Integer> getRecentlyWatch() {
+    public CircularFifoQueue<ObjectId> getRecentlyWatch() {
         return recentlyWatch;
     }
 
-    public void addToRecentlyWatch(Integer movieId) {
+    public void addToRecentlyWatch(ObjectId movieId) {
         recentlyWatch.add(movieId);
     }
 
-    public void removeFromRecentlyWatch(Integer movieId) {
+    public void removeFromRecentlyWatch(ObjectId movieId) {
         recentlyWatch.remove(movieId);
     }
 

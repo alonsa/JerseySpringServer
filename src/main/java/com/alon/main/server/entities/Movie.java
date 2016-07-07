@@ -8,15 +8,14 @@ import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Indexed;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
 /**
  * Created by alon_ss on 6/28/16.
  */
 
 @Entity
-public class Movie extends BaseEntity implements Serializable{
-
-    @Indexed(unique = true)
-    private Integer innerId;
+public class Movie extends RecommandEntity implements Serializable{
 
     private String title;
 
@@ -32,18 +31,10 @@ public class Movie extends BaseEntity implements Serializable{
 
     public Movie(Integer id, String title, List<String> genres, List<ExternalId> externalIds) {
 
-        this.innerId = id;
+        this.setInnerId(id);
         this.title = title;
         this.externalIds = externalIds;
         this.genres = genres;
-    }
-
-    public Integer getInnerId() {
-        return innerId;
-    }
-
-    public void setInnerId(Integer innerId) {
-        this.innerId = innerId;
     }
 
     public String getTitle() {
@@ -90,7 +81,7 @@ public class Movie extends BaseEntity implements Serializable{
     @Override
     public String toString() {
         return "Movie{" +
-                "innerId=" + innerId +
+                "innerId=" + this.getInnerId() +
                 ", title='" + title + '\'' +
                 ", plot='" + plot + '\'' +
                 ", uri=" + uri +

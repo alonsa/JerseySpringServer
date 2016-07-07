@@ -1,21 +1,17 @@
 package com.alon.main.server.service;
 
 import com.google.common.collect.Iterables;
-import org.apache.commons.math3.analysis.function.Identity;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.recommendation.ALS;
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel;
 import org.apache.spark.mllib.recommendation.Rating;
-import org.apache.spark.rdd.RDD;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
@@ -27,10 +23,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.alon.main.server.Const.Consts.*;
 
@@ -54,7 +48,7 @@ public final class RecommenderService {
         setModel();
     }
 
-    @Deprecated  // need to delete this - only use for in memory movieDao.
+    @Deprecated  // need to delete this - only use for in memory movieBaseDao.
     public JavaSparkContext getJavaSparkContext(){
         return sc;
     }
@@ -66,13 +60,13 @@ public final class RecommenderService {
 
 //    https://github.com/apache/spark/tree/master/examples/src/main/java/org/apache/spark/examples/mllib
 
-    public List<Integer> recommend(Integer user) {
-        Rating[] ratings = model.recommendProducts(user, RECENTLY_WATCH_MAX_SIZE + RESPONSE_NUM);
+    public List<Integer> recommend(Integer user, Integer recommendationNumber) {
+        Rating[] ratings = model.recommendProducts(user, recommendationNumber);
         List<Rating> ratingsList = Arrays.asList(ratings);
         return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
     }
 
-    public List<Integer> recommend() {
+    public List<Integer> recommend(Integer recommendationNumber) {
         JavaRDD<Tuple2<Object, Rating[]>> userToRatings = model.recommendProductsForUsers(1).toJavaRDD();
 
         JavaRDD<Rating> counvterToMovieId = userToRatings.map(Tuple2::_2).map(x -> x[0]);
@@ -88,7 +82,7 @@ public final class RecommenderService {
 
         List<Integer> response = JavaPairRDD.fromJavaRDD(counterToMovieId).
                 sortByKey(false).
-                take(RESPONSE_NUM).
+                take(recommendationNumber).
                 stream().map(Tuple2::_2).
                 collect(Collectors.toList());
 
@@ -164,6 +158,7 @@ public final class RecommenderService {
         int rank = 10;
         int numIterations = 10;
         MatrixFactorizationModel model1 = ALS.trainImplicit(JavaRDD.toRDD(ratings), rank, numIterations);
+        MatrixFactorizationModel model2 = ALS.trainImplicit(JavaRDD.toRDD(ratings), rank, numIterations, 0.01, 0.01);
         model1.save(sc.sc(), MODEL_PATH);
 
         double mean1 = testModel(ratings, model1);

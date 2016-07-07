@@ -30,19 +30,28 @@ public  class Consts {
     public static final String MODEL_PATH = OUTPUT_DIR + "/model";
     public static final Pattern COMMA = Pattern.compile(",");
 
-    // Dao
+    // BaseDao
     public static final String MOVIES_PATH = BASE_PATH + "/movies.csv";
     public static final Pattern VERTICAL_BAR = Pattern.compile("\\|");
     public static final String HOST = "localhost";
     public static final Integer PORT = 27017;
-    public static final String VOD = "vod";
+    public static final String VOD_DB = "vod";
+    public static final String USER_DB = "user";
+    public static final String COUNTER_DB = "counter";
 
     // BaseEntity
     public static final String ID_FIELD = "_id";
-
-    // Movie
     public static final String INNER_ID_FIELD = "innerId";
 
+    // Movie
+    public static final String URI_FIELD = "uri";
+
+    // User
+    public static final String NAME_FIELD = "name";
+
+    // Counter
+    public static final String ENTITY_NAME_FIELD = "entityName";
+    public static final String VALUE_FIELD = "value";
 
 
     // Player

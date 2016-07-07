@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -20,7 +21,7 @@ import static com.alon.main.server.Const.Consts.VERTICAL_BAR;
  * Created by alon_ss on 6/26/16.
  */
 //@Service
-public final class MovieMemoryDaoImpl {//implements Dao<Movie> {
+public final class MovieMemoryDaoImpl {//implements BaseDao<Movie> {
 
     @Autowired
 	public RecommenderService recommenderService;
@@ -33,6 +34,14 @@ public final class MovieMemoryDaoImpl {//implements Dao<Movie> {
     private void init() {
         sc = recommenderService.getJavaSparkContext();
         loadMovies();
+    }
+
+    public List<Movie> getAll(Integer num){
+        if (num != null){
+            return moviesRdd.take(num);
+        }else{
+            return getAll();
+        }
     }
 
     public List<Movie> getAll(){
@@ -60,12 +69,14 @@ public final class MovieMemoryDaoImpl {//implements Dao<Movie> {
 
         List<ExternalId> externalIds = new ArrayList<>();
 
-        externalIds.add(new ExternalId(MovieSite.IMDB, tok[3]));
+        Integer imdbId = Integer.parseInt(tok[3]);
+        externalIds.add(new ExternalId(MovieSite.IMDB, imdbId.toString()));
 
         Optional<String> trailer = Optional.empty();
 
         if (tok.length >=5){
-            externalIds.add(new ExternalId(MovieSite.TMDB, tok[4]));
+            Integer tmdbId = Integer.parseInt(tok[4]);
+            externalIds.add(new ExternalId(MovieSite.TMDB, tmdbId.toString()));
         }
 
         return new Movie(id, title, genres, externalIds);

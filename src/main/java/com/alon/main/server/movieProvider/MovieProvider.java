@@ -1,5 +1,6 @@
 package com.alon.main.server.movieProvider;
 
+import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
 
@@ -27,7 +28,7 @@ public class MovieProvider {
 //                queryParam(V, KEY).
 //                build();
         Optional<String> optionalTmdbId = movie.getExternalIds().stream().
-                filter(external -> external.getSiteName().equals("TMDB")).map(ExternalId::getId).findFirst();
+                filter(external -> external.getSiteName().equals(MovieSite.TMDB)).map(ExternalId::getId).findFirst();
 
         if (!optionalTmdbId.isPresent()){
             System.out.println("Movie has no TmdbId. " + movie);
