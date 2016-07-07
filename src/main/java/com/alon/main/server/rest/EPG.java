@@ -3,8 +3,12 @@ package com.alon.main.server.rest;
 import com.alon.main.server.entities.Movie;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 /**
  * Created by alon_ss on 7/6/16.
@@ -29,8 +33,10 @@ public class EPG {
         this.id = movie.getId().toString();
         this.title = movie.getTitle();
         this.plot = movie.getPlot();
-        this.uri = movie.getUri().toString();
+
         this.genres = movie.getGenres();
+
+        this.uri = Optional.ofNullable(movie.getUri()).orElse(getDefualtUri()).toString();
     }
 
     public String getId() {
@@ -72,4 +78,30 @@ public class EPG {
     public void setGenres(List<String> genres) {
         this.genres = genres;
     }
+
+    @Deprecated
+    private URI getDefualtUri() {
+        Random randomGenerator = new Random();
+
+        List<URI> uris = new ArrayList<>();
+        try {
+            uris.add(new URI("https://www.youtube.com/watch?v=LTgRm6Qgscc"));
+            uris.add(new URI("https://www.youtube.com/watch?v=DhNMHcRSNdo"));
+            uris.add(new URI("https://www.youtube.com/watch?v=hvha-7EvwNg"));
+            uris.add(new URI("https://www.youtube.com/watch?v=kvg9GxWjgIw"));
+            uris.add(new URI("https://www.youtube.com/watch?v=OT9HsNszYCI"));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        int index = randomGenerator.nextInt(uris.size());
+
+
+        return uris.get(index);
+    }
+
+
+
+    //
+
 }
