@@ -2,6 +2,7 @@ package com.alon.main.server.dao;
 
 import com.alon.main.server.entities.BaseEntity;
 import com.mongodb.MongoClient;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Key;
@@ -24,6 +25,8 @@ import static com.alon.main.server.Const.Consts.*;
 
 public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T> {
 
+    private final static Logger logger = Logger.getLogger(MorphiaBaseDao.class);
+
     // sudo mongod --dbpath /usr/local/Cellar/mongodb/data/db
 
     protected Datastore datastore;
@@ -36,14 +39,20 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
     @PostConstruct
     @Async
     protected void init() {
-        MongoClient mongo = new MongoClient(HOST, PORT);
+        try {
+            MongoClient mongo = new MongoClient(HOST, PORT);
 
-        Morphia morphia = new Morphia();
-        morphia.mapPackage(typeParameterClass.getCanonicalName());
+            Morphia morphia = new Morphia();
+            morphia.mapPackage(typeParameterClass.getCanonicalName());
 
-        datastore = morphia.createDatastore(mongo, getDbName());
-        morphia.map(typeParameterClass);
-        datastore.ensureIndexes();
+            datastore = morphia.createDatastore(mongo, getDbName());
+            morphia.map(typeParameterClass);
+
+            datastore.ensureIndexes();
+        }catch (Exception e){
+            logger.error(e);
+            logger.error("Some error while tring to access mongoDb. Maybe mongoDb is down. \n Try to run it by: sudo mongod --dbpath /usr/local/Cellar/mongodb/data/db");
+        }
     }
 
     public Long count() {
