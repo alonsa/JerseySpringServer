@@ -206,17 +206,38 @@
         localStorage.setItem("play", arr[1].id);
         document.getElementById('play').value = nextPlay;
 
-        function formatNum(input){
-            if(input < 10){
-                return "0" + input;
-            }else {
-                return input;
-            }
+        function setTimer (sec) {
+
+            var minutes = formatNum(Math.floor(sec / 60));
+            var seconds = formatNum(Math.floor(sec % 60));
+
+            document.getElementById("timer").innerHTML = "Ends in: " + minutes + ":" + seconds;
+
         }
+
+        function inter(sec) {
+
+            setTimeout( function () {
+                setTimer (sec);
+
+                if (sec > 0) {
+                    inter(sec - 1);
+                }
+
+            }, 1000);
+        }
+
+        inter(sec);
+
+
     }
 
-    function goToLink(){
-        return "http://localhost:63342/ServerSide/com/alon/main/client/videoPlayer.html?userName=" + user + "&play=" + nextPlay;
+    function formatNum(input){
+        if(input < 10){
+            return "0" + input;
+        }else {
+            return input;
+        }
     }
 
     window.onload = function () {
@@ -240,24 +261,7 @@
 </html>
 
 
-<!--var a =1;-->
-<!--function doSomthing () {-->
-<!--console.log(a);-->
-<!--a++;-->
-<!--}-->
 
-<!--function inter() {-->
-<!--setTimeout( function () {-->
-<!--doSomthing ();-->
-
-<!--if (a < 10) {-->
-<!--inter();-->
-<!--}-->
-
-<!--}, 1000);-->
-<!--}-->
-
-<!--inter();-->
 <!--location.replace/reload/-->
 
 
