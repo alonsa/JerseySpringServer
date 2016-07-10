@@ -3,6 +3,10 @@
 <head>
 
     <style>
+        form {
+            margin: 0;
+            padding: 0;
+        }
 
         .content {
             position: relative;
@@ -31,14 +35,10 @@
             justify-content : space-around;
         }
 
-        .left-button {
+        .actions-buttons {
+            width: 300px;
+            height: 90px;
             text-align: left;
-            width: 30%;
-        }
-
-        .right-button {
-            text-align: left;
-            width: 35%;
         }
 
         .movie-body {
@@ -47,6 +47,7 @@
             background-color: rgba(0, 0, 0, 0.73);
             color: white;
             font-size: 90%;
+            padding: 5px 0;
 
         }
 
@@ -77,7 +78,10 @@
             margin-bottom: auto;
         }
 
-
+        .play-img {
+            width: 40px;
+            height: 40px;
+        }
 
     </style>
 </head>
@@ -96,7 +100,7 @@
     <div class="btns-location">
         <div class="btns-container">
 
-            <div class="left-button">
+            <div class="actions-buttons">
                 <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
                 <hr>
                 <div class="movie-body" >
@@ -113,7 +117,7 @@
 
             </div>
 
-            <div class="right-button">
+            <div class="actions-buttons">
                 <div class=button-header>&nbsp&nbsp&nbsp Next pic:</div>
 
                 <hr>
@@ -130,7 +134,7 @@
                             <input type="hidden" id= play name="play" value="" />
                             <!--<input type="submit" value="Go away..." />;-->
 
-                            <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" width="48" height="48">
+                            <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" class="play-img">
                         </form>
                     </div>
                 </div>
@@ -192,7 +196,7 @@
 
         document.getElementById("timer").innerHTML = "Ends in: " + minutes + ":" + seconds;
 
-        youTubeUrl = arr[1].uri;
+        youTubeUrl = arr[0].uri;
         localStorage.setItem("youTubeUrl", youTubeUrl);
         localStorage.setItem("nextPlay", nextPlay);
         localStorage.setItem("user", user);
@@ -234,3 +238,34 @@
 
 </body>
 </html>
+
+
+<!--var a =1;-->
+<!--function doSomthing () {-->
+<!--console.log(a);-->
+<!--a++;-->
+<!--}-->
+
+<!--function inter() {-->
+<!--setTimeout( function () {-->
+<!--doSomthing ();-->
+
+<!--if (a < 10) {-->
+<!--inter();-->
+<!--}-->
+
+<!--}, 1000);-->
+<!--}-->
+
+<!--inter();-->
+<!--location.replace/reload/-->
+
+
+<btn onclick="displayBtn('like')"></btn>
+<btn onclick="displayBtn('unlike')"></btn>
+
+<!--var btnLike = 'like';-->
+<!--function displayBtn(imgId) {-->
+    <!--doc.getElemById('btn-like-unlike').src = 'style/' + imgId + '.png';-->
+<!--btnLike = imgId;-->
+<!--}-->
