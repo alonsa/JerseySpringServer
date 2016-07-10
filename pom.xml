@@ -84,13 +84,6 @@
 			<version>2.0.7</version>
 		</dependency>
 
-		<!--// For CircularFifoQueue-->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
-
 		<!--// For mongodb-->
 		<dependency>
 			<groupId>org.mongodb</groupId>

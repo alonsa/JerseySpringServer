@@ -1,10 +1,13 @@
 package com.alon.main.server.rest;
 
 import com.alon.main.server.dao.MorphiaBaseDao;
+import com.alon.main.server.entities.BaseEntity;
+import com.alon.main.server.entities.CurrentlyWatch;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.entities.User;
 import com.alon.main.server.movieProvider.YouTubeClient;
 import com.alon.main.server.service.MovieService;
+import com.alon.main.server.service.RatingService;
 import com.alon.main.server.service.RecommenderService;
 import com.alon.main.server.service.UserService;
 import org.apache.log4j.Logger;
@@ -19,8 +22,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
 import static com.alon.main.server.Const.Consts.RESPONSE_NUM;
@@ -42,6 +47,9 @@ public class RestImpl {
 
 	@Autowired
 	public UserService userService;
+
+	@Autowired
+	public RatingService ratingService;
 
 	@Autowired
 	public MovieService movieService;
@@ -73,11 +81,12 @@ public class RestImpl {
 
 		User user = userService.getUserByName(userName);
 
+		ratingService.addRating(user);
+
 		if (recommandNum == null){
 			recommandNum = RESPONSE_NUM;
 		}
 
-//		recommenderService.
 
 		logger.debug("Ask for recommendation for " +
 				  "userId : " + userName +
@@ -89,9 +98,7 @@ public class RestImpl {
 //				recommenderService.recommend():
 //				recommenderService.recommend(userInnerId);
 
-		recommenderService.setModelAsync();
-
-		Integer recommendationNumber = RECENTLY_WATCH_MAX_SIZE + recommandNum;
+		Integer recommendationNumber = user.getRecentlyWatch().size() + recommandNum;
 
 		List<Integer> moviesInnerIds = recommenderService.recommend(user.getInnerId(), recommendationNumber);
 
@@ -99,12 +106,28 @@ public class RestImpl {
 
 		HashSet<ObjectId> userRecentlyWatch = new HashSet<>(user.getRecentlyWatch());
 
-		List<Epg> epgs = movies.stream().
+		List<Movie> filteredMovie = movies.stream().
 				filter(movie -> !userRecentlyWatch.contains(movie.getId())).
-				limit(recommandNum).map(Epg::new).
-				collect(Collectors.toList());
+				limit(recommandNum).collect(Collectors.toList());
+
+		List<Epg> epgs = filteredMovie.stream().map(Epg::new).collect(Collectors.toList());
+
+		Optional<Movie> firstMovie = filteredMovie.stream().findFirst();
+		Long epgLength = epgs.stream().findFirst().map(Epg::getLength).orElse(null);
+
+		firstMovie.map(movie -> {
+			movie.setLength(epgLength);
+			return movie;
+		});
+
+		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
+		user.addToRecentlyWatch(filteredMovie.stream().map(BaseEntity::getId).collect(Collectors.toList()));
+
+		userService.save(user);
 
 		logger.debug("Response: " + epgs);
+
+//		recommenderService.setModelAsync();
 
 
 		return epgs;

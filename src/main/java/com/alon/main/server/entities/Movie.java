@@ -27,6 +27,8 @@ public class Movie extends RecommandEntity implements Serializable{
 
     private List<ExternalId> externalIds = new ArrayList<>();
 
+    private Long length;
+
     public Movie(){};
 
     public Movie(Integer id, String title, List<String> genres, List<ExternalId> externalIds) {
@@ -77,6 +79,13 @@ public class Movie extends RecommandEntity implements Serializable{
         this.uri = trailer;
     }
 
+    public Long getLength() {
+        return length;
+    }
+
+    public void setLength(Long length) {
+        this.length = length;
+    }
 
     @Override
     public String toString() {

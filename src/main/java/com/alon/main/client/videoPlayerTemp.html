@@ -85,60 +85,59 @@
 
 <body>
 
-<div class="content">
-    <div class="video-container">
-        <iframe id="video-frame"
-                >
-            <!--src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">-->
-        </iframe>
-    </div>
+    <div class="content">
+        <div class="video-container">
+            <iframe id="video-frame">
+                <!--src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">-->
+            </iframe>
+        </div>
 
-    <div class="btns-location">
-        <div class="btns-container">
+        <div class="btns-location">
+            <div class="btns-container">
 
-            <div class="left-button">
-                <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
-                <hr>
-                <div class="movie-body" >
-                    <div class="movie-body-text" >
-                        <div id="first-movie-title" >First Movie Title</div>
-                        <div class="first-movie-plot" >First Movie Plot</div>
+                <div class="left-button">
+                    <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
+                    <hr>
+                    <div class="movie-body" >
+                        <div class="movie-body-text" >
+                            <div id="first-movie-title" >First Movie Title</div>
+                            <div class="first-movie-plot" >First Movie Plot</div>
+                        </div>
+                        <div class="movie-body-action-area" >
+                            <div id="timer" >Ends in: </div>
+                        </div>
+                        <!--<div class="element" id="el5"><b>element 5</b> <span class="timeout">10000</span> seconds</div>-->
+
                     </div>
-                    <div class="movie-body-action-area" >
-                        <div id="timer" >Ends in: </div>
-                    </div>
-                    <!--<div class="element" id="el5"><b>element 5</b> <span class="timeout">10000</span> seconds</div>-->
 
                 </div>
 
-            </div>
+                <div class="right-button">
+                    <div class=button-header>&nbsp&nbsp&nbsp Next pic:</div>
 
-            <div class="right-button">
-                <div class=button-header>&nbsp&nbsp&nbsp Next pic:</div>
+                    <hr>
 
-                <hr>
+                    <div class="movie-body" >
+                        <div class="movie-body-text" >
+                            <div id="second-movie-title" >Second Movie Title</div>
+                            <div class="first-movie-plot" >Second Movie Plot</div>
+                        </div>
+                        <div class="movie-body-action-area" >
+                            <!--<input id="reload" type="button" onclick="location.href='http://google.com';" value="Go to Google" />-->
+                            <form action="videoPlayer.html?">
+                                <input type="hidden" id= userId name="userName" value="" />
+                                <input type="hidden" id= play name="play" value="" />
+                                <!--<input type="submit" value="Go away..." />;-->
 
-                <div class="movie-body" >
-                    <div class="movie-body-text" >
-                        <div id="second-movie-title" >Second Movie Title</div>
-                        <div class="first-movie-plot" >Second Movie Plot</div>
-                    </div>
-                    <div class="movie-body-action-area" >
-                        <!--<input id="reload" type="button" onclick="location.href='http://google.com';" value="Go to Google" />-->
-                        <form action="videoPlayer.html?">
-                            <input type="hidden" id= userId name="userName" value="" />
-                            <input type="hidden" id= play name="play" value="" />
-                            <!--<input type="submit" value="Go away..." />;-->
-
-                            <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" width="48" height="48">
-                        </form>
+                                <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" width="48" height="48">
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
 
 
 <script>
@@ -197,10 +196,15 @@
         localStorage.setItem("nextPlay", nextPlay);
         localStorage.setItem("user", user);
 
-        document.getElementById('video-frame').src = "https://" + youTubeUrl;
+
+
+        document.getElementById('video-frame').src = youTubeUrl;
+        alert(document.getElementById('video-frame').src);
+
 
         localStorage.setItem("play", arr[1].id);
         document.getElementById('play').value = nextPlay;
+
 
         function formatNum(input){
             if(input < 10){

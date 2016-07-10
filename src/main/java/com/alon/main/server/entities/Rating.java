@@ -25,11 +25,11 @@ public class Rating extends BaseEntity implements Serializable{
 
     public Rating(){};
 
-    public Rating(Integer userId, Integer movieId, Double rating, Long timestamp) {
+    public Rating(Integer userId, Integer movieId, Double rating) {
         this.userId = userId;
         this.movieId = movieId;
         this.rating = rating;
-        this.timestamp = timestamp;
+        this.timestamp = System.currentTimeMillis();
     }
 
     public Integer getUserId() {

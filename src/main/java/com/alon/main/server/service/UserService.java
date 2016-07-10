@@ -4,7 +4,9 @@ import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.dao.RecommandDao;
 import com.alon.main.server.dao.counter.CounterMorphiaDaoImpl;
 import com.alon.main.server.dao.user.UserMorphiaDaoImpl;
+import com.alon.main.server.entities.CurrentlyWatch;
 import com.alon.main.server.entities.Movie;
+import com.alon.main.server.entities.Rating;
 import com.alon.main.server.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,13 +19,13 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     @Autowired
-    public RecommandDao<Movie> movieBaseDao;
-
-    @Autowired
     public UserMorphiaDaoImpl userDao;
 
     @Autowired
-    public CounterMorphiaDaoImpl counterDao;
+    public CounterMorphiaDaoImpl counterDao; // TODO change to Service
+
+    @Autowired
+    public RatingService ratingService; // TODO change to Service
 
     public User getUserByName(String userName) {
         User user = userDao.getByName(userName);
@@ -37,5 +39,9 @@ public class UserService {
         return user;
     }
 
+
+    public void save(User user) {
+        userDao.save(user);
+    }
 
 }

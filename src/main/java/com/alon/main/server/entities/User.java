@@ -1,13 +1,9 @@
 package com.alon.main.server.entities;
 
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
+import java.util.*;
 
 /**
  * Created by alon_ss on 6/28/16.
@@ -16,7 +12,9 @@ public class User extends RecommandEntity implements Serializable{
 
     private String name;
 
-    private CircularFifoQueue<ObjectId> recentlyWatch = new CircularFifoQueue<ObjectId>(RECENTLY_WATCH_MAX_SIZE);
+    private List<ObjectId> recentlyWatch = new ArrayList<ObjectId>();
+
+    private CurrentlyWatch currentlyWatch;
 
     public User() {}
 
@@ -40,7 +38,7 @@ public class User extends RecommandEntity implements Serializable{
         this.name = name;
     }
 
-    public CircularFifoQueue<ObjectId> getRecentlyWatch() {
+    public List<ObjectId> getRecentlyWatch() {
         return recentlyWatch;
     }
 
@@ -48,10 +46,34 @@ public class User extends RecommandEntity implements Serializable{
         recentlyWatch.add(movieId);
     }
 
+    public void addToRecentlyWatch(List<ObjectId> movieIds) {
+        recentlyWatch.addAll(movieIds);
+    }
+
+    public void setRecentlyWatch(List<ObjectId> recentlyWatch) {
+        this.recentlyWatch = recentlyWatch;
+    }
+
+    public CurrentlyWatch getCurrentlyWatch() {
+        return currentlyWatch;
+    }
+
+    public void setCurrentlyWatch(CurrentlyWatch currentlyWatch) {
+        if (currentlyWatch != null){
+            this.currentlyWatch = currentlyWatch;
+        }
+    }
+
     public void removeFromRecentlyWatch(ObjectId movieId) {
         recentlyWatch.remove(movieId);
     }
 
-
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", recentlyWatch=" + recentlyWatch +
+                ", currentlyWatch=" + currentlyWatch +
+                '}';
+    }
 }

@@ -1,13 +1,9 @@
 package com.alon.main.server.entities;
 
 import com.alon.main.server.Const.MovieSite;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Embedded;
 
 import java.io.Serializable;
-
-import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
 
 /**
  * Created by alon_ss on 6/28/16.

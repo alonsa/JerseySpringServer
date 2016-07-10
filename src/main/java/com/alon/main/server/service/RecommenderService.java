@@ -1,23 +1,18 @@
 package com.alon.main.server.service;
 
-import com.alon.main.server.dao.rating.RatingMorphiaDaoImpl;
 import com.google.common.collect.Iterables;
-import org.apache.commons.math3.analysis.function.Identity;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.recommendation.ALS;
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel;
 import org.apache.spark.mllib.recommendation.Rating;
-import org.apache.spark.rdd.RDD;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -30,10 +25,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.alon.main.server.Const.Consts.*;
 
@@ -49,10 +45,10 @@ public final class RecommenderService {
 
 
     private JavaSparkContext sc;
-    private MatrixFactorizationModel model;
+    private JavaRDD<Rating> fileRatings;
+    private ModelContainer modelContainer = new ModelContainer();
 
     @PostConstruct
-    @Async
     private void init() {
         SparkConf sparkConf = new SparkConf().setAppName("JavaALS");
         sparkConf.setMaster("local[8]").set("spark.executor.memory", "4g");
@@ -73,14 +69,18 @@ public final class RecommenderService {
 //    https://github.com/apache/spark/tree/master/examples/src/main/java/org/apache/spark/examples/mllib
 
     public List<Integer> recommend(Integer user, Integer recommendationNumber) {
-
+        MatrixFactorizationModel model = modelContainer.getReadModel();
         Rating[] ratings = model.recommendProducts(user, recommendationNumber);
+        modelContainer.returnReadModel();
         List<Rating> ratingsList = Arrays.asList(ratings);
         return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
     }
 
     public List<Integer> recommend(Integer recommendationNumber) {
+
+        MatrixFactorizationModel model = modelContainer.getReadModel();
         JavaRDD<Tuple2<Object, Rating[]>> userToRatings = model.recommendProductsForUsers(1).toJavaRDD();
+        modelContainer.returnReadModel();
 
         JavaRDD<Rating> counvterToMovieId = userToRatings.map(Tuple2::_2).map(x -> x[0]);
 
@@ -119,6 +119,7 @@ public final class RecommenderService {
     private void setModel() {
         Configuration conf = new Configuration();
 
+        MatrixFactorizationModel model;
         try {
             Path path = new Path(MODEL_PATH);
             long dateLong = FileSystem.get(conf).getFileStatus(path).getModificationTime();
@@ -127,65 +128,66 @@ public final class RecommenderService {
             if (date.plusDays(2).isBefore(now)) {
                 FileSystem.get(conf).delete(path, true);
             }
-            model = MatrixFactorizationModel.load(sc.sc(), MODEL_PATH);
+            modelContainer.loadModel();
+
         } catch (Exception e) {
-            model = createModel();
-            try {
-                saveModel(model);
-            } catch (FileAlreadyExistsException f) {
-                f.printStackTrace();
-            }
+            MatrixFactorizationModel tempModel = createModel(true);
+            modelContainer.setModel(tempModel);
         }
     }
 
     @Async
     public void setModelAsync() {
-        Configuration conf = new Configuration();
-        Path path = new Path(MODEL_PATH);
-        try {
-            FileSystem.get(conf).delete(path, true);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
 
-        model = createModel();
-        try {
-            saveModel(model);
-        } catch (FileAlreadyExistsException e) {
-            e.printStackTrace();
-        }
+        Runnable runnable = () -> {
+            try {
+                Configuration conf = new Configuration();
+                Path path = new Path(MODEL_TEMP_PATH);
+                try {
+                    FileSystem.get(conf).delete(path, true);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
+                MatrixFactorizationModel model = createModel(false);
+                modelContainer.setModel(model);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
+
     }
 
-    private MatrixFactorizationModel createModel() {
+    private MatrixFactorizationModel createModel(Boolean loadFromFiles) {
 
         int rank = 10;
         int iterations = 10;
 
-        JavaRDD<Rating> ratings = loadRatings();
+        JavaRDD<Rating> ratings = loadRatings(loadFromFiles);
 
         return ALS.trainImplicit(ratings.rdd(), rank, iterations);
     }
 
     private void saveModel(MatrixFactorizationModel modelTOSave) throws FileAlreadyExistsException {
-
-        JavaRDD<Rating> ratings = loadRatings();
-
         modelTOSave.save(sc.sc(), MODEL_PATH);
-
         deleteAndAddAll(modelTOSave);
     }
 
-
-
-    private JavaRDD<Rating> loadRatings() {
-        JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
-        String first = lines.first();
+    private JavaRDD<Rating> loadRatings(Boolean loadFromFiles) {
+        if (loadFromFiles){
+            JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
+            String first = lines.first();
+            fileRatings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
+        }
 
         List<Rating> dbRatingList = ratingService.getAllToList().stream().map(this::toRating).collect(Collectors.toList());
 
         JavaRDD<Rating> dbRatings = sc.parallelize(dbRatingList);
-        JavaRDD<Rating> fileRatings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
-        return fileRatings.union(dbRatings);
+        return fileRatings.union(dbRatings).distinct();
     }
 
     private Rating toRating(com.alon.main.server.entities.Rating rating) {
@@ -242,6 +244,55 @@ public final class RecommenderService {
 
     private static String FeaturesToString(Tuple2<Object, double[]> feature) {
         return feature._1() + "," + Arrays.toString(feature._2());
+    }
+
+    private class ModelContainer {
+        private MatrixFactorizationModel model;
+
+        ReadWriteLock lock = new ReentrantReadWriteLock();
+
+        void loadModel(){
+            WriteLockModel();
+            this.model = MatrixFactorizationModel.load(sc.sc(), MODEL_PATH);
+            returnWriteModel();
+        }
+
+        void setModel(MatrixFactorizationModel model){
+
+
+            WriteLockModel();
+
+            Configuration conf = new Configuration();
+            Path path = new Path(MODEL_PATH);
+            try {
+                FileSystem.get(conf).delete(path, true);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+            this.model = model;
+            model.save(sc.sc(), MODEL_PATH);
+            deleteAndAddAll(model);
+
+            returnWriteModel();
+        }
+
+        MatrixFactorizationModel getReadModel(){
+            lock.readLock().lock();
+            return model;
+        }
+
+        void WriteLockModel(){
+            lock.writeLock().lock();
+        }
+
+        void returnReadModel(){
+            lock.readLock().unlock();;
+        }
+
+        void returnWriteModel(){
+            lock.writeLock().unlock();;
+        }
     }
 
 

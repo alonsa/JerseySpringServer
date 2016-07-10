@@ -40,6 +40,7 @@ public  class Consts {
     // public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
     public static final String RATINGS_PATH = BASE_PATH + "/ratings.csv";
     public static final String MODEL_PATH = OUTPUT_DIR + "/model";
+    public static final String MODEL_TEMP_PATH = OUTPUT_DIR + "/tempmModel";
     public static final Pattern COMMA = Pattern.compile(",");
 
     // BaseDao

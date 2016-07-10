@@ -41,13 +41,14 @@ public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
     @Autowired
     ApplicationContext applicationContext;
 
-
-    Map<String, MorphiaBaseDao> nameToDao = new HashMap<>();
+    private Map<String, MorphiaBaseDao> nameToDao = new HashMap<>();
 
     @PostConstruct
     @Async
     protected void init() {
         super.init();
+
+        applicationContext.getBeansOfType(MorphiaBaseDao.class).values();
 
         Collection<MorphiaBaseDao> daos = applicationContext.getBeansOfType(MorphiaBaseDao.class).values();
 
