@@ -4,6 +4,7 @@
 target/
 */.idea/workspace.xml
 */.idea/tasks.xml
+.idea/
 
 hs_err_pid42667.log
 hs_err_pid43415.log
