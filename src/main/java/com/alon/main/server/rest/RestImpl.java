@@ -1,28 +1,25 @@
 package com.alon.main.server.rest;
 
-import com.alon.main.server.dao.RecommandDao;
-import com.alon.main.server.dao.counter.CounterMorphiaDaoImpl;
-import com.alon.main.server.dao.user.UserMorphiaDaoImpl;
-import com.alon.main.server.entities.ExternalId;
+import com.alon.main.server.dao.MorphiaBaseDao;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.entities.User;
+import com.alon.main.server.movieProvider.YouTubeClient;
 import com.alon.main.server.service.MovieService;
 import com.alon.main.server.service.RecommenderService;
 import com.alon.main.server.service.UserService;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.spark.sql.catalyst.expressions.aggregate.Final;
 import org.bson.types.ObjectId;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.alon.main.server.Const.Consts.RECENTLY_WATCH_MAX_SIZE;
@@ -36,6 +33,10 @@ public class RestImpl {
 //		http://localhost:8090/recommend/epg/9021
 //		http://localhost:8090/recommend/epgs/9021
 
+
+	private final static Logger logger = Logger.getLogger(RestImpl.class);
+
+
 	@Autowired
 	public RecommenderService recommenderService;
 
@@ -45,27 +46,30 @@ public class RestImpl {
 	@Autowired
 	public MovieService movieService;
 
+	@QueryParam("num") Integer recommandNum;
+	@QueryParam("play") String play;
+
 	@GET
 	@Path("epgs/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
-	public List<EPG> recommands(@PathParam("id") String userName, @QueryParam("num") Integer recommandNum) {
+	public List<Epg> recommands(@PathParam("id") String userName) {
 
-		return getEpgRecommendationForUser(userName, recommandNum);
+		return getEpgRecommendationForUser(userName);
 	}
 
 	@GET
 	@Path("epg/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public EPG recommand(@PathParam("id") String userName, @QueryParam("num") Integer recommandNum) {
+	public Epg recommand(@PathParam("id") String userName, @QueryParam("num") Integer recommandNum) {
 
-		List<EPG> moviesToRecommand = getEpgRecommendationForUser(userName, recommandNum);
+		List<Epg> moviesToRecommand = getEpgRecommendationForUser(userName);
 
 
 		return moviesToRecommand.get(0);
 	}
 
-	private List<EPG> getEpgRecommendationForUser(String userName, @QueryParam("num") Integer recommandNum) {
-		Integer userInnerId = null;
+	private List<Epg> getEpgRecommendationForUser(String userName) {
+
 
 		User user = userService.getUserByName(userName);
 
@@ -73,9 +77,19 @@ public class RestImpl {
 			recommandNum = RESPONSE_NUM;
 		}
 
+//		recommenderService.
+
+		logger.debug("Ask for recommendation for " +
+				  "userId : " + userName +
+				", user: " + user +
+				", recommandNum: " + recommandNum +
+				", play: "+ play);
+
 //		List<Integer> moviesInnerIds = userInnerId == null ?
 //				recommenderService.recommend():
 //				recommenderService.recommend(userInnerId);
+
+		recommenderService.setModelAsync();
 
 		Integer recommendationNumber = RECENTLY_WATCH_MAX_SIZE + recommandNum;
 
@@ -84,10 +98,19 @@ public class RestImpl {
 		List<Movie> movies = movieService.getByInnerIds(moviesInnerIds);
 
 		HashSet<ObjectId> userRecentlyWatch = new HashSet<>(user.getRecentlyWatch());
-		return movies.stream().
+
+		List<Epg> epgs = movies.stream().
 				filter(movie -> !userRecentlyWatch.contains(movie.getId())).
-				limit(recommandNum).map(EPG::new).
+				limit(recommandNum).map(Epg::new).
 				collect(Collectors.toList());
+
+		logger.debug("Response: " + epgs);
+
+
+		return epgs;
 	}
+
+
+
 
 }

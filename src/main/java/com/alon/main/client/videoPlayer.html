@@ -14,14 +14,14 @@
             height: 100%;
         }
 
-        .video-frame {
+        #video-frame {
             width: 100%;
             height: 100%;
         }
 
         .btns-location {
             position: absolute;
-            bottom: 0;
+            bottom: 50px;
             width: 100%;
         }
 
@@ -33,25 +33,40 @@
 
         .left-button {
             text-align: left;
-            width: 25%;
-
+            width: 30%;
         }
 
         .right-button {
             text-align: left;
-            width: 25%;
-
+            width: 35%;
         }
 
         .movie-body {
+            display: flex;
+            justify-content : space-around;
             background-color: rgba(0, 0, 0, 0.73);
             color: white;
+            font-size: 90%;
+
         }
-        
+
+        .movie-body-text {
+            display: flex;
+            flex-direction: column;
+        }
+
         .button-header {
             color: white;
             text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
             font-weight: bold;
+            font-size: 110%;
+        }
+
+        .movie-body-action-area{
+            display: flex;
+
+            justify-content : flex-end;
+            align-items : flex-end;
         }
 
         hr{
@@ -62,6 +77,8 @@
             margin-bottom: auto;
         }
 
+
+
     </style>
 </head>
 
@@ -70,8 +87,9 @@
 
     <div class="content">
         <div class="video-container">
-            <iframe class="video-frame"
-                    src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">
+            <iframe id="video-frame"
+                    >
+                <!--src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">-->
             </iframe>
         </div>
 
@@ -80,12 +98,17 @@
 
                 <div class="left-button">
                     <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
-
                     <hr>
-
                     <div class="movie-body" >
-                        <div id="first-movie-title" >First Movie Title</div>
-                        <div class="first-movie-plot" >First Movie Plot</div>
+                        <div class="movie-body-text" >
+                            <div id="first-movie-title" >First Movie Title</div>
+                            <div class="first-movie-plot" >First Movie Plot</div>
+                        </div>
+                        <div class="movie-body-action-area" >
+                            <div id="timer" >Ends in: </div>
+                        </div>
+                        <!--<div class="element" id="el5"><b>element 5</b> <span class="timeout">10000</span> seconds</div>-->
+
                     </div>
 
                 </div>
@@ -96,29 +119,34 @@
                     <hr>
 
                     <div class="movie-body" >
-                        <div id="second-movie-title" >Second Movie Title</div>
-                        <div class="first-movie-plot" >Second Movie Plot</div>
+                        <div class="movie-body-text" >
+                            <div id="second-movie-title" >Second Movie Title</div>
+                            <div class="first-movie-plot" >Second Movie Plot</div>
+                        </div>
+                        <div class="movie-body-action-area" >
+                            <input id="reload" type="button" onclick="location.href=goToLink();" value="Go to site" />
+                            <!--<input id="reload" type="button" onclick="location.href='http://google.com';" value="Go to Google" />-->
+                            <form action="videoPlayer.html?">
+                                <input type="hidden" id= userId name="userName" value="" />
+                                <input type="hidden" id= play name="play" value="" />
+                                <input type="submit" value="Go away..." />;
+
+                                <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" width="48" height="48">
+                            </form>
+                        </div>
                     </div>
-
                 </div>
-
-                <button type="button" id="nowPlaying"></button>
-                <button type="button" id="playingNext">playingNext</button>
             </div>
         </div>
 
     </div>
 
 
-
-<div id="id01"></div>
-
-
 <script>
     var url = "http://localhost:8090/recommend/epgs/";
     var user;
-    var room = "ROOM";
-    var socket;
+    var youTubeUrl;
+    var nextPlay;
     var xmlhttp = new XMLHttpRequest();
 
     var qs = (function(a) {
@@ -142,7 +170,7 @@
         }
     };
 
-    var  parsedUrl = url + qs["userName"];
+    var  parsedUrl = url + qs["userName"] + "?play=" + qs["play"];
     xmlhttp.open("GET", parsedUrl, true);
     xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
 
@@ -155,13 +183,37 @@
             out += '<a href="' + arr[i].uri + '">' + arr[i].uri + '</a><br>';
         }
 
-        document.getElementById("nowPlaying").innerHTML = arr[0].title;
-        document.getElementById('playingNext').innerHTML = arr[1].title;
-
         document.getElementById("first-movie-title").innerHTML = arr[0].title;
         document.getElementById('second-movie-title').innerHTML = arr[1].title;
+        nextPlay = arr[1].id;
 
-        document.getElementById("id01").innerHTML = out;
+        var sec = arr[0].length / 1000;
+        var minutes = formatNum(Math.floor(sec / 60));
+        var seconds = formatNum(Math.floor(sec % 60));
+
+        document.getElementById("timer").innerHTML = "Ends in: " + minutes + ":" + seconds;
+
+        youTubeUrl = arr[1].uri;
+        localStorage.setItem("youTubeUrl", youTubeUrl);
+        localStorage.setItem("nextPlay", nextPlay);
+        localStorage.setItem("user", user);
+
+        document.getElementById('video-frame').src = arr[0].uri;
+        localStorage.setItem("play", arr[1].id);
+        document.getElementById('play').value = nextPlay;
+
+
+        function formatNum(input){
+            if(input < 10){
+                return "0" + input;
+            }else {
+                return input;
+            }
+        }
+    }
+
+    function goToLink(){
+        return "http://localhost:63342/ServerSide/com/alon/main/client/videoPlayer.html?userName=" + user + "&play=" + nextPlay;
     }
 
     window.onload = function () {
@@ -170,8 +222,9 @@
         user = localStorage.getItem("userName");
         localStorage.setItem("valUser", user);
 
-//        document.getElementById('playingNext').innerHTML=user;
-//        document.getElementById('nowPlaying').innerHTML="user";
+        document.getElementById('userId').value = user;
+        document.getElementById('play').value = nextPlay;
+
     }
 </script>
 

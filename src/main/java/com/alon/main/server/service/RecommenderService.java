@@ -1,17 +1,24 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.dao.rating.RatingMorphiaDaoImpl;
 import com.google.common.collect.Iterables;
+import org.apache.commons.math3.analysis.function.Identity;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.mllib.recommendation.ALS;
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel;
 import org.apache.spark.mllib.recommendation.Rating;
+import org.apache.spark.rdd.RDD;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import scala.Tuple2;
@@ -23,8 +30,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.alon.main.server.Const.Consts.*;
 
@@ -34,6 +43,9 @@ import static com.alon.main.server.Const.Consts.*;
 
 @Service
 public final class RecommenderService {
+
+    @Autowired
+    RatingService ratingService;
 
 
     private JavaSparkContext sc;
@@ -61,6 +73,7 @@ public final class RecommenderService {
 //    https://github.com/apache/spark/tree/master/examples/src/main/java/org/apache/spark/examples/mllib
 
     public List<Integer> recommend(Integer user, Integer recommendationNumber) {
+
         Rating[] ratings = model.recommendProducts(user, recommendationNumber);
         List<Rating> ratingsList = Arrays.asList(ratings);
         return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
@@ -103,12 +116,9 @@ public final class RecommenderService {
         }
     }
 
-
     private void setModel() {
         Configuration conf = new Configuration();
 
-//        model = testSomeModels();
-//
         try {
             Path path = new Path(MODEL_PATH);
             long dateLong = FileSystem.get(conf).getFileStatus(path).getModificationTime();
@@ -119,56 +129,67 @@ public final class RecommenderService {
             }
             model = MatrixFactorizationModel.load(sc.sc(), MODEL_PATH);
         } catch (Exception e) {
-            model = calculateAndCreateModel();
+            model = createModel();
+            try {
+                saveModel(model);
+            } catch (FileAlreadyExistsException f) {
+                f.printStackTrace();
+            }
         }
     }
 
-    private MatrixFactorizationModel calculateAndCreateModel() {
+    @Async
+    public void setModelAsync() {
+        Configuration conf = new Configuration();
+        Path path = new Path(MODEL_PATH);
+        try {
+            FileSystem.get(conf).delete(path, true);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+        model = createModel();
+        try {
+            saveModel(model);
+        } catch (FileAlreadyExistsException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private MatrixFactorizationModel createModel() {
 
         int rank = 10;
         int iterations = 10;
-        int blocks = -1;
 
-//        if (args.length == 5) {
-//            blocks = Integer.parseInt(args[4]);
-//        }
+        JavaRDD<Rating> ratings = loadRatings();
 
-        JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
-        String first = lines.first();
-        JavaRDD<Rating> ratings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
+        return ALS.trainImplicit(ratings.rdd(), rank, iterations);
+    }
 
-        MatrixFactorizationModel newModel = ALS.train(ratings.rdd(), rank, iterations, 0.01, blocks);
-        newModel.save(sc.sc(), MODEL_PATH);
+    private void saveModel(MatrixFactorizationModel modelTOSave) throws FileAlreadyExistsException {
 
-        deleteAndAddAll(newModel);
+        JavaRDD<Rating> ratings = loadRatings();
 
-        return newModel;
+        modelTOSave.save(sc.sc(), MODEL_PATH);
+
+        deleteAndAddAll(modelTOSave);
     }
 
 
 
-    private MatrixFactorizationModel testSomeModels() {
-
+    private JavaRDD<Rating> loadRatings() {
         JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
         String first = lines.first();
-        JavaRDD<Rating> ratings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
 
-        // Build the recommendation model using ALS
-//        MatrixFactorizationModel model1 = MatrixFactorizationModel.load(sc.sc(), MODEL_PATH);
-        int rank = 10;
-        int numIterations = 10;
-        MatrixFactorizationModel model1 = ALS.trainImplicit(JavaRDD.toRDD(ratings), rank, numIterations);
-        MatrixFactorizationModel model2 = ALS.trainImplicit(JavaRDD.toRDD(ratings), rank, numIterations, 0.01, 0.01);
-        model1.save(sc.sc(), MODEL_PATH);
+        List<Rating> dbRatingList = ratingService.getAllToList().stream().map(this::toRating).collect(Collectors.toList());
 
-        double mean1 = testModel(ratings, model1);
-        Rating[] model1recommend = model1.recommendProducts(247754, 10);
-        System.out.println("Model1 Mean Squared Error = " + mean1);
-        System.out.println("Model1 recommend for products" );
-        Arrays.asList(model1recommend).stream().map(Rating::product).forEach(System.out::println);
+        JavaRDD<Rating> dbRatings = sc.parallelize(dbRatingList);
+        JavaRDD<Rating> fileRatings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
+        return fileRatings.union(dbRatings);
+    }
 
-        return model;
-
+    private Rating toRating(com.alon.main.server.entities.Rating rating) {
+        return new Rating(rating.getUserId(), rating.getMovieId(), rating.getRating());
     }
 
     private double testModel(JavaRDD<Rating> ratings, MatrixFactorizationModel model) {

@@ -29,11 +29,11 @@ public class TmdbClient  implements MovieProviderClient {
         }
 
         URI url = UriBuilder.
-                fromUri(BASE_URL).
-                path(MOVIE).
+                fromUri(TMDB_BASE_URL).
+                path(TMDB_MOVIE).
                 path(vodId).
-                path(VIDEOS).
-                queryParam(APP_ID, KEY).
+                path(TMDB_VIDEOS).
+                queryParam(TMDB_APP_ID, TMDB_KEY).
                 build();
 
 

@@ -13,11 +13,23 @@ public  class Consts {
     public static final String V_QUERY_PARAM = "v";
 
     //The movie DB
-    public static final String BASE_URL = "http://api.themoviedb.org/3/";
-    public static final String APP_ID = "api_key";
-    public static final String VIDEOS = "videos";
-    public static final String MOVIE = "movie";
-    public static final String KEY = "9426e5f190c68f947f6d8768a8cc04e8";
+    public static final String TMDB_BASE_URL = "http://api.themoviedb.org/3/";
+    public static final String TMDB_APP_ID = "api_key";
+    public static final String TMDB_VIDEOS = "videos";
+    public static final String TMDB_MOVIE = "movie";
+    public static final String TMDB_KEY = "9426e5f190c68f947f6d8768a8cc04e8";
+
+
+    //You Tube
+    public static final String YOU_TUBE_BASE_URL = "https://www.googleapis.com/youtube/v3/";
+    public static final String YOU_TUBE_VIDEOS = "videos";
+    public static final String YOU_TUBE_MOVIE = "movie";
+    public static final String YOU_TUBE_PART = "part";
+    public static final String YOU_TUBE_CONTENT_DETAILS = "contentDetails";
+    public static final String YOU_TUBE_ID = "id";
+    public static final String YOU_TUBE_KEY = "key";
+    public static final String YOU_TUBE_PRIVATE_KEY = "AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA";
+
 
     // Recommander
     public static final String OUTPUT_DIR = "/Users/alon_ss/Learning/Recommender/outputDir";
@@ -38,6 +50,7 @@ public  class Consts {
     public static final String VOD_DB = "vod";
     public static final String USER_DB = "user";
     public static final String COUNTER_DB = "counter";
+    public static final String RATING_DB = "rating";
 
     // BaseEntity
     public static final String ID_FIELD = "_id";

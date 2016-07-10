@@ -28,6 +28,9 @@ public interface BaseDao<T> {
     public Iterable<Key<T>> saveAll(List<T> entity);
     Iterator<T> getAll(Integer limit, Integer offset);
     Iterator<T> getAll();
+    List<T> getAllToList(Integer limit, Integer offset);
+    List<T> getAllToList();
+
 
     public UpdateResults updateByField(T entity, Map<String, Object> map);
 

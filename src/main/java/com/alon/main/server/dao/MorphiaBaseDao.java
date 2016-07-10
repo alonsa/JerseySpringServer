@@ -96,15 +96,7 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
 
     @Override
     public Iterator<T> getAll(Integer limit, Integer offset) {
-        if (limit == null){
-            limit = 0;
-        }
-
-        if (offset == null){
-            offset = 0;
-        }
-
-        return datastore.find(typeParameterClass).offset(offset).limit(limit).fetch().iterator();
+        return getAllQuery(limit, offset).fetch().iterator();
     }
 
     @Override
@@ -112,6 +104,17 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
         return getAll(null, null);
     }
 
+    @Override
+    public List<T> getAllToList(Integer limit, Integer offset) {
+        return getAllQuery(limit, offset).asList();
+    }
+
+    @Override
+    public List<T> getAllToList() {
+        return getAllToList(null, null) ;
+    }
+
+    @Override
     public UpdateResults updateByField(T entity, Map<String, Object> map) {
 
 
@@ -123,6 +126,19 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
 
         return datastore.update(query, ops);
     }
+
+    private Query<T> getAllQuery(Integer limit, Integer offset) {
+        if (limit == null){
+            limit = 0;
+        }
+
+        if (offset == null){
+            offset = 0;
+        }
+
+        return datastore.find(typeParameterClass).offset(offset).limit(limit);
+    }
+
 
 }
 
