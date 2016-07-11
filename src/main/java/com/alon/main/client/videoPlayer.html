@@ -70,6 +70,24 @@
             align-items : flex-end;
         }
 
+        .change-button {
+            display: flex;
+
+            justify-content : flex-end;
+            align-items : flex-end;
+        }
+
+        .up-down {
+            display: flex;
+            flex-direction: column;
+
+        }
+        .up-down-button{
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
         hr{
             border-width: 5px;
             color: #8b282b;
@@ -127,6 +145,22 @@
                         <div id="second-movie-title" >Second Movie Title</div>
                         <div class="first-movie-plot" >Second Movie Plot</div>
                     </div>
+
+                    <div class = "up-down">
+                        <button class="up-down-button" type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img src="http://www.clker.com/cliparts/c/9/1/c/124568764843218829Soeb_Plain_Arrow_4.svg.med.png" height="20" onclick=upArrow(); border="0"/>
+                        </button>
+                        <button class="up-down-button" type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img src="http://www.clker.com/cliparts/9/1/e/7/1245687669879828181Soeb_Plain_Arrow_5.svg.med.png" height="20" onclick=downArrow(); />
+                        </button>
+                    </div>
+
+                    <div class = "change-button">
+                        <button  id="changed-button" onclick=changedButtonLogic() type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img id = "button-image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" height="40" onclick=upArrow(); border="0"/>
+                        </button>
+                    </div>
+
                     <div class="movie-body-action-area" >
                         <!--<input id="reload" type="button" onclick="location.href='http://google.com';" value="Go to Google" />-->
                         <form action="videoPlayer.html?">
@@ -150,7 +184,7 @@
     var user;
     var youTubeUrl;
     var nextPlay;
-    var xmlhttp = new XMLHttpRequest();
+    var buttonState = "play";
 
     var qs = (function(a) {
         if (a == "") return {};
@@ -166,10 +200,12 @@
         return b;
     })(window.location.search.substr(1).split('&'));
 
+    var xmlhttp = new XMLHttpRequest();
+
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var myArr = JSON.parse(xmlhttp.responseText);
-            myFunction(myArr);
+            parseGerRecommandationResponse(myArr);
         }
     };
 
@@ -179,31 +215,33 @@
 
     xmlhttp.send();
 
-    function myFunction(arr) {
+    function parseGerRecommandationResponse(arr) {
         var out = "";
         var i;
         for(i = 0; i < arr.length; i++) {
             out += '<a href="' + arr[i].uri + '">' + arr[i].uri + '</a><br>';
         }
 
-        document.getElementById("first-movie-title").innerHTML = arr[0].title;
-        document.getElementById('second-movie-title').innerHTML = arr[1].title;
-        nextPlay = arr[1].id;
-
-        var sec = arr[0].length / 1000;
+        var firstElement = arr[0];
+        document.getElementById("first-movie-title").innerHTML = firstElement.title;
+        var sec = firstElement.length / 1000;
         var minutes = formatNum(Math.floor(sec / 60));
         var seconds = formatNum(Math.floor(sec % 60));
-
         document.getElementById("timer").innerHTML = "Ends in: " + minutes + ":" + seconds;
+        youTubeUrl = firstElement.uri;
 
-        youTubeUrl = arr[0].uri;
+        var secondElement = arr[1];
+        document.getElementById('second-movie-title').innerHTML = secondElement.title;
+        nextPlay = secondElement.id;
+        localStorage.setItem("play", secondElement.id);
+
+
         localStorage.setItem("youTubeUrl", youTubeUrl);
         localStorage.setItem("nextPlay", nextPlay);
         localStorage.setItem("user", user);
 
         document.getElementById('video-frame').src = "https://" + youTubeUrl;
 
-        localStorage.setItem("play", arr[1].id);
         document.getElementById('play').value = nextPlay;
 
         function setTimer (sec) {
@@ -212,7 +250,6 @@
             var seconds = formatNum(Math.floor(sec % 60));
 
             document.getElementById("timer").innerHTML = "Ends in: " + minutes + ":" + seconds;
-
         }
 
         function inter(sec) {
@@ -223,7 +260,7 @@
                 if (sec > 0) {
                     inter(sec - 1);
                 }else{
-                    window.location.href = location.protocol + '//' + location.host + location.pathname + "?userName=" + user + "&play=" + nextPlay;
+                    window.location.href = getRefreshPage();
                 }
 
             }, 1000);
@@ -233,11 +270,35 @@
 
     }
 
+    function getRefreshPage() {
+        return location.protocol + '//' + location.host + location.pathname + "?userName=" + user + "&play=" + nextPlay;
+    }
+
     function formatNum(input){
         if(input < 10){
             return "0" + input;
         }else {
             return input;
+        }
+    }
+
+    function upArrow () {
+        buttonState = "play";
+        document.getElementById('button-image').src = "http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png";
+    }
+
+    function downArrow () {
+        buttonState = "unLike";
+        document.getElementById('button-image').src = "http://www.clker.com/cliparts/7/h/y/H/m/Y/red-thumbs-down-md.png";
+    }
+
+    function changedButtonLogic() {
+
+        if (buttonState == "play"){
+            window.location.href = getRefreshPage();
+
+        }else{
+
         }
     }
 
@@ -253,17 +314,9 @@
     }
 </script>
 
-
-
-
-
-
 </body>
 </html>
 
-
-
-<!--location.replace/reload/-->
 
 
 <btn onclick="displayBtn('like')"></btn>
