@@ -222,13 +222,14 @@
 
                 if (sec > 0) {
                     inter(sec - 1);
+                }else{
+                    window.location.href = location.protocol + '//' + location.host + location.pathname + "?userName=" + user + "&play=" + nextPlay;
                 }
 
             }, 1000);
         }
 
         inter(sec);
-
 
     }
 
