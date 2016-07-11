@@ -42,5 +42,12 @@ public class RatingService {
         }
     }
 
+    public void addRating(Integer user, Integer movie, Boolean like) {
+
+        Double normalRating = like ? 5.0 : 0.0;
+        Rating rating = new Rating(user, movie, normalRating);
+        ratingDao.save(rating);
+    }
+
 
 }

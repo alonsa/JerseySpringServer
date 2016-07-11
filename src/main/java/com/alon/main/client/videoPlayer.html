@@ -109,9 +109,7 @@
 
 <div class="content">
     <div class="video-container">
-        <iframe id="video-frame"
-                >
-            <!--src="http://www.youtube.com/embed/XGSy3_Czz8k?autoplay=1">-->
+        <iframe id="video-frame">
         </iframe>
     </div>
 
@@ -129,8 +127,6 @@
                     <div class="movie-body-action-area" >
                         <div id="timer" >Ends in: </div>
                     </div>
-                    <!--<div class="element" id="el5"><b>element 5</b> <span class="timeout">10000</span> seconds</div>-->
-
                 </div>
 
             </div>
@@ -156,20 +152,9 @@
                     </div>
 
                     <div class = "change-button">
-                        <button  id="changed-button" onclick=changedButtonLogic() type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img id = "button-image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" height="40" onclick=upArrow(); border="0"/>
+                        <button  id="changed-button" onclick=changedButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img id = "button-image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" height="40" ; border="0"/>
                         </button>
-                    </div>
-
-                    <div class="movie-body-action-area" >
-                        <!--<input id="reload" type="button" onclick="location.href='http://google.com';" value="Go to Google" />-->
-                        <form action="videoPlayer.html?">
-                            <input type="hidden" id= userId name="userName" value="" />
-                            <input type="hidden" id= play name="play" value="" />
-                            <!--<input type="submit" value="Go away..." />;-->
-
-                            <input type="image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" alt="Submit" class="play-img">
-                        </form>
                     </div>
                 </div>
             </div>
@@ -199,23 +184,27 @@
         }
         return b;
     })(window.location.search.substr(1).split('&'));
+    var  parsedUrl = url + qs["userName"] + "?play=" + qs["play"];
 
     var xmlhttp = new XMLHttpRequest();
 
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var myArr = JSON.parse(xmlhttp.responseText);
-            parseGerRecommandationResponse(myArr);
+            parseGetRecommandationResponse(myArr);
         }
     };
 
-    var  parsedUrl = url + qs["userName"] + "?play=" + qs["play"];
-    xmlhttp.open("GET", parsedUrl, true);
-    xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
+    doGetRequest(xmlhttp, parsedUrl);
 
-    xmlhttp.send();
+    function doGetRequest(xmlhttp, url) {
+        xmlhttp.open("GET", url, true);
+        xmlhttp.overrideMimeType('text/xml'); // unsupported by IE
 
-    function parseGerRecommandationResponse(arr) {
+        xmlhttp.send();
+    }
+
+    function parseGetRecommandationResponse(arr) {
         var out = "";
         var i;
         for(i = 0; i < arr.length; i++) {
@@ -284,11 +273,15 @@
 
     function upArrow () {
         buttonState = "play";
+        alert("buttonState change to: " + buttonState);
+
         document.getElementById('button-image').src = "http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png";
     }
 
     function downArrow () {
         buttonState = "unLike";
+        alert("buttonState change to: " + buttonState);
+
         document.getElementById('button-image').src = "http://www.clker.com/cliparts/7/h/y/H/m/Y/red-thumbs-down-md.png";
     }
 
@@ -298,7 +291,34 @@
             window.location.href = getRefreshPage();
 
         }else{
+            var  parsedUrl = url + qs["userName"] + "?play=" + nextPlay + "&like=false";
 
+            var xmlhttp = new XMLHttpRequest();
+
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var myArr = JSON.parse(xmlhttp.responseText);
+                    parseUnLikeResponse(myArr);
+                }
+            };
+
+            doGetRequest(xmlhttp, parsedUrl);
+
+            function parseUnLikeResponse(arr) {
+                var out = "";
+                var i;
+                for(i = 0; i < arr.length; i++) {
+                    out += '<a href="' + arr[i].uri + '">' + arr[i].uri + '</a><br>';
+                }
+
+                var newElement = arr[0];
+                document.getElementById('second-movie-title').innerHTML = newElement.title;
+                nextPlay = newElement.id;
+                localStorage.setItem("play", newElement.id);
+
+                localStorage.setItem("nextPlay", nextPlay);
+                localStorage.setItem("user", user);
+            }
         }
     }
 
@@ -316,14 +336,3 @@
 
 </body>
 </html>
-
-
-
-<btn onclick="displayBtn('like')"></btn>
-<btn onclick="displayBtn('unlike')"></btn>
-
-<!--var btnLike = 'like';-->
-<!--function displayBtn(imgId) {-->
-    <!--doc.getElemById('btn-like-unlike').src = 'style/' + imgId + '.png';-->
-<!--btnLike = imgId;-->
-<!--}-->

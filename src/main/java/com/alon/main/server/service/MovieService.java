@@ -3,6 +3,7 @@ package com.alon.main.server.service;
 import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.dao.movie.MovieMorphiaDaoImpl;
 import com.alon.main.server.entities.Movie;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,10 @@ public class MovieService {
 
     public List<Movie> getByInnerIds(List<Integer> moviesInnerIds) {
         return movieBaseDao.getByInnerIds(moviesInnerIds);
+    }
+
+    public Movie getById(ObjectId movieId) {
+        return movieBaseDao.getById(movieId);
     }
 
 

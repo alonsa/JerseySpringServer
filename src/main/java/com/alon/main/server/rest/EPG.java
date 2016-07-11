@@ -43,15 +43,7 @@ public class Epg {
         this.title = Optional.ofNullable(movie.getTitle()).map(CharMatcher.ASCII::retainFrom).orElse(null);
         this.uri = Optional.ofNullable(convertToEmbedUri(movie.getUri())).orElse(getDefualtUri()).toString();
 
-
-
         setLengthFromYouTube();
-
-
-        long sec = length / 1000;
-        double minutes = Math.floor(sec / 60);
-        Double seconds = Math.floor(sec % 60);
-        seconds.toString();
     }
 
     public String getId() {

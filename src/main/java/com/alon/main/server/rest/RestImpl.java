@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -56,6 +57,7 @@ public class RestImpl {
 
 	@QueryParam("num") Integer recommandNum;
 	@QueryParam("play") String play;
+	@DefaultValue("true") @QueryParam("like") boolean like;
 
 	@GET
 	@Path("epgs/{id}")
@@ -78,15 +80,23 @@ public class RestImpl {
 
 	private List<Epg> getEpgRecommendationForUser(String userName) {
 
-
 		User user = userService.getUserByName(userName);
 
+		Optional<Movie> optionalPlayMovie = Optional.empty();
+		if (play != null && ObjectId.isValid(play)){
+			Movie movie = movieService.getById(new ObjectId(play));
+			optionalPlayMovie = Optional.ofNullable(movie);
+		}
+
+		// Add rating by the time the user watched the asset
 		ratingService.addRating(user);
+
+		// add rating by the user action (want to play or unlike the asset)
+		optionalPlayMovie.ifPresent(movie -> ratingService.addRating(user.getInnerId(), movie.getInnerId(), like));
 
 		if (recommandNum == null){
 			recommandNum = RESPONSE_NUM;
 		}
-
 
 		logger.debug("Ask for recommendation for " +
 				  "userId : " + userName +
@@ -100,13 +110,19 @@ public class RestImpl {
 
 		Integer recommendationNumber = user.getRecentlyWatch().size() + recommandNum;
 
-		List<Integer> moviesInnerIds = recommenderService.recommend(user.getInnerId(), recommendationNumber);
+		List<Integer> recomandedMoviesInnerIds = recommenderService.recommend(user.getInnerId(), recommendationNumber);
 
-		List<Movie> movies = movieService.getByInnerIds(moviesInnerIds);
+		List<Movie> dbMovies = movieService.getByInnerIds(recomandedMoviesInnerIds);
+		Map<Integer, Movie> innerIdToMovie = dbMovies.stream().collect(Collectors.toMap(Movie::getInnerId, Function.identity()));
+		List<Movie> recommendedMovies = recomandedMoviesInnerIds.stream().map(innerIdToMovie::get).collect(Collectors.toList());
+
+		if (like){
+			optionalPlayMovie.ifPresent(movie -> recommendedMovies.add(0, movie));
+		}
 
 		HashSet<ObjectId> userRecentlyWatch = new HashSet<>(user.getRecentlyWatch());
 
-		List<Movie> filteredMovie = movies.stream().
+		List<Movie> filteredMovie = recommendedMovies.stream().
 				filter(movie -> !userRecentlyWatch.contains(movie.getId())).
 				limit(recommandNum).collect(Collectors.toList());
 
@@ -121,7 +137,7 @@ public class RestImpl {
 		});
 
 		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
-		user.addToRecentlyWatch(filteredMovie.stream().map(BaseEntity::getId).collect(Collectors.toList()));
+		firstMovie.ifPresent(movie -> user.addToRecentlyWatch(movie.getId()));
 
 		userService.save(user);
 
