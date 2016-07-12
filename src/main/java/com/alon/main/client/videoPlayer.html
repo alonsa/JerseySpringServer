@@ -80,17 +80,30 @@
 
             justify-content : flex-end;
             align-items : flex-end;
-        }
 
-        .up-down {
-            display: flex;
-            flex-direction: column;
-
-        }
-        .up-down-button{
             margin: 0;
             padding: 0;
             border: 0;
+        }
+
+        .button-image {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+        .button {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .popup {
+            position: absolute;
+            color: white;
+            text-shadow: -2px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+            font-weight: bold;
+            display:none;
+
         }
 
         hr{
@@ -101,10 +114,6 @@
             margin-bottom: auto;
         }
 
-        .play-img {
-            width: 40px;
-            height: 40px;
-        }
 
     </style>
 </head>
@@ -136,9 +145,12 @@
                     </div>
 
                     <div class = "change-button">
-                        <button  id="skip-button" onclick=skipButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img id = "skip-image" src="https://openclipart.org/download/161389/Next-Track.svg" height="40" ; border="0"/>
+                        <div class="popup" id="popupId" >Next</div>
+                        <button  class = "button" onmouseover=showPopup() onmouseout=hidePopup() onclick=skipButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img class = "button-image" src="https://openclipart.org/download/161389/Next-Track.svg" height="40" ; border="0"/>
                         </button>
+                        <!--<div id="popup" style="display: none">Next</div>-->
+
                     </div>
                 </div>
 
@@ -156,8 +168,8 @@
                     </div>
 
                     <div class = "change-button">
-                        <button  id="trash-button" onclick=trashButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img id = "trash-image" src="https://openclipart.org/download/228856/1443908522.svg" height="40" ; border="0"/>
+                        <button  class = "button" onclick=trashButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img class = "button-image" src="https://openclipart.org/download/228856/1443908522.svg" height="40" ; border="0"/>
                         </button>
                     </div>
                 </div>
@@ -270,6 +282,14 @@
         }else {
             return input;
         }
+    }
+
+    function showPopup() {
+        document.getElementById("popupId").setAttribute("style", "display:block;")
+    }
+
+    function hidePopup() {
+        document.getElementById("popupId").setAttribute("style", "display:none;")
     }
 
     function skipButtonLogic() {
