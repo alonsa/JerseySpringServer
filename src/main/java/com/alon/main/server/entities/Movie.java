@@ -98,6 +98,24 @@ public class Movie extends RecommandEntity implements Serializable{
                 ", externalIds=" + externalIds +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Movie)) return false;
+
+        Movie movie = (Movie) o;
+
+        return getId().equals(movie.getId()) && getInnerId().equals(movie.getInnerId());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId().hashCode();
+        result = 31 * result + getInnerId().hashCode();
+        return result;
+    }
 }
 
 

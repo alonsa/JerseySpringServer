@@ -8,6 +8,11 @@
             padding: 0;
         }
 
+        .body {
+            margin: 0;
+            padding: 0;
+        }
+
         .content {
             position: relative;
             width: 100%;
@@ -36,7 +41,7 @@
         }
 
         .actions-buttons {
-            width: 300px;
+            width: 450px;
             height: 90px;
             text-align: left;
         }
@@ -105,7 +110,7 @@
 </head>
 
 
-<body>
+<body class="body">
 
 <div class="content">
     <div class="video-container">
@@ -231,8 +236,6 @@
 
         document.getElementById('video-frame').src = "https://" + youTubeUrl;
 
-        document.getElementById('play').value = nextPlay;
-
         function setTimer (sec) {
 
             var minutes = formatNum(Math.floor(sec / 60));
@@ -273,16 +276,12 @@
 
     function upArrow () {
         buttonState = "play";
-        alert("buttonState change to: " + buttonState);
-
         document.getElementById('button-image').src = "http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png";
     }
 
     function downArrow () {
         buttonState = "unLike";
-        alert("buttonState change to: " + buttonState);
-
-        document.getElementById('button-image').src = "http://www.clker.com/cliparts/7/h/y/H/m/Y/red-thumbs-down-md.png";
+        document.getElementById('button-image').src = "https://openclipart.org/download/228856/1443908522.svg";
     }
 
     function changedButtonLogic() {
@@ -319,6 +318,8 @@
                 localStorage.setItem("nextPlay", nextPlay);
                 localStorage.setItem("user", user);
             }
+
+            upArrow ();
         }
     }
 
@@ -328,10 +329,8 @@
         user = localStorage.getItem("userName");
         localStorage.setItem("valUser", user);
 
-        document.getElementById('userId').value = user;
-        document.getElementById('play').value = nextPlay;
-
     }
+
 </script>
 
 </body>

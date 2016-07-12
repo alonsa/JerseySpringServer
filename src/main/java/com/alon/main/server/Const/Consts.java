@@ -67,12 +67,11 @@ public  class Consts {
     public static final String ENTITY_NAME_FIELD = "entityName";
     public static final String VALUE_FIELD = "value";
 
-
     // Player
     public static final Integer RECENTLY_WATCH_MAX_SIZE = 4;
 
     //Web
-    public static final Integer RESPONSE_NUM = 2;
+    public static final String RESPONSE_NUM = "2";
 
 
 

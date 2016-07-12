@@ -1,10 +1,9 @@
 package com.alon.main.server.service;
 
-import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -27,7 +26,6 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -40,13 +38,15 @@ import static com.alon.main.server.Const.Consts.*;
 @Service
 public final class RecommenderService {
 
+    private final static Logger logger = Logger.getLogger(RecommenderService.class);
+
     @Autowired
     RatingService ratingService;
-
 
     private JavaSparkContext sc;
     private JavaRDD<Rating> fileRatings;
     private ModelContainer modelContainer = new ModelContainer();
+    private List<Integer> defaultMovieList;
 
     @PostConstruct
     private void init() {
@@ -54,6 +54,18 @@ public final class RecommenderService {
         sparkConf.setMaster("local[8]").set("spark.executor.memory", "4g");
         sc = new JavaSparkContext(sparkConf);
         setModel();
+        loadRatingFromFile();
+        setDefaultMovieList();
+    }
+
+    private void setDefaultMovieList() {
+        JavaRDD<Rating> ratings = fileRatings.filter(rating -> rating.rating() > 4);
+
+        JavaPairRDD<Rating, Integer> pairs = JavaPairRDD.fromJavaRDD(ratings.map(rating -> new Tuple2<>(rating, 1)));
+        JavaPairRDD<Rating, Integer> ratingToSum = pairs.reduceByKey((a, b) -> a + b);
+
+        JavaPairRDD<Integer, Rating> sumToRating = JavaPairRDD.fromJavaRDD(ratingToSum.map(Tuple2::swap));
+        defaultMovieList = sumToRating.sortByKey().values().map(Rating::product).collect();
     }
 
     @Deprecated  // need to delete this - only use for in memory movieBaseDao.
@@ -66,60 +78,30 @@ public final class RecommenderService {
         sc.stop();
     }
 
-//    https://github.com/apache/spark/tree/master/examples/src/main/java/org/apache/spark/examples/mllib
-
     public List<Integer> recommend(Integer user, Integer recommendationNumber) {
-        MatrixFactorizationModel model = modelContainer.getReadModel();
-        Rating[] ratings = model.recommendProducts(user, recommendationNumber);
-        modelContainer.returnReadModel();
-        List<Rating> ratingsList = Arrays.asList(ratings);
-        return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
-    }
 
-    public List<Integer> recommend(Integer recommendationNumber) {
+        logger.debug("Ask for recommendation for " + "userId : " + user + ", user: " + user + ", recommandNum: " + recommendationNumber);
 
         MatrixFactorizationModel model = modelContainer.getReadModel();
-        JavaRDD<Tuple2<Object, Rating[]>> userToRatings = model.recommendProductsForUsers(1).toJavaRDD();
-        modelContainer.returnReadModel();
 
-        JavaRDD<Rating> counvterToMovieId = userToRatings.map(Tuple2::_2).map(x -> x[0]);
+        List<Rating> ratingsList;
+        try{
+            Rating[] ratings = model.recommendProducts(user, recommendationNumber);
+            ratingsList = Arrays.asList(ratings);
 
-        long counvtwerToMovieId = userToRatings.map(Tuple2::_2).map(x -> x[0]).count();
-
-        JavaRDD<Tuple2<Integer, Integer>> counterToMovieId = userToRatings.
-                map(new UserRatingToMovieIds()).
-                flatMap(List::iterator).
-                groupBy(x -> x).
-                mapValues(Iterables::size).
-                map(x -> new Tuple2<>(x._2(), x._1));
-
-        List<Integer> response = JavaPairRDD.fromJavaRDD(counterToMovieId).
-                sortByKey(false).
-                take(recommendationNumber).
-                stream().map(Tuple2::_2).
-                collect(Collectors.toList());
-
-
-        return response ; //ratingsList.stream().map(Rating::product).collect(Collectors.toList());
-    }
-
-
-    private static class UserRatingToMovieIds implements Function<Tuple2<Object, Rating[]>, List<Integer>> {
-
-        @Override
-        public List<Integer> call(Tuple2<Object, Rating[]> line) {
-
-            return Arrays.asList(line._2()).
-                    stream().
-                    map(Rating::product).
-                    collect(Collectors.toList());
+        }catch (Exception e){
+            logger.error("Error to recommend for user: " + user, e);
+            return defaultMovieList.subList(0, recommendationNumber);
+        }finally {
+            modelContainer.returnReadModel();
         }
+
+        return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
     }
 
     private void setModel() {
         Configuration conf = new Configuration();
 
-        MatrixFactorizationModel model;
         try {
             Path path = new Path(MODEL_PATH);
             long dateLong = FileSystem.get(conf).getFileStatus(path).getModificationTime();
@@ -172,16 +154,9 @@ public final class RecommenderService {
         return ALS.trainImplicit(ratings.rdd(), rank, iterations);
     }
 
-    private void saveModel(MatrixFactorizationModel modelTOSave) throws FileAlreadyExistsException {
-        modelTOSave.save(sc.sc(), MODEL_PATH);
-        deleteAndAddAll(modelTOSave);
-    }
-
     private JavaRDD<Rating> loadRatings(Boolean loadFromFiles) {
         if (loadFromFiles){
-            JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
-            String first = lines.first();
-            fileRatings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
+            loadRatingFromFile();
         }
 
         List<Rating> dbRatingList = ratingService.getAllToList().stream().map(this::toRating).collect(Collectors.toList());
@@ -190,26 +165,37 @@ public final class RecommenderService {
         return fileRatings.union(dbRatings).distinct();
     }
 
+    private void loadRatingFromFile() {
+        if (fileRatings == null){
+            JavaRDD<String> lines = sc.textFile(RATINGS_PATH);
+            String first = lines.first();
+            fileRatings = lines.filter(line -> !line.equals(first)).map(new ParseRating());
+        }
+    }
+
     private Rating toRating(com.alon.main.server.entities.Rating rating) {
         return new Rating(rating.getUserId(), rating.getMovieId(), rating.getRating());
     }
 
-    private double testModel(JavaRDD<Rating> ratings, MatrixFactorizationModel model) {
 
+    private double testModel(JavaRDD<Rating> ratings, MatrixFactorizationModel model) {
 
         JavaRDD<Tuple2<Object, Object>> userProducts = ratings.map(r -> new Tuple2<Object, Object>(r.user(), r.product()));
 
-                // Evaluate the model on rating data
-        JavaRDD<Tuple2<Tuple2<Integer, Integer>, Double>> predictionsNorPair = model.predict(JavaRDD.toRDD(userProducts)).toJavaRDD().map(r -> new Tuple2<>(new Tuple2<Integer, Integer>(r.user(), r.product()), r.rating()));
+        // Evaluate the model on rating data
+        JavaRDD<Tuple2<Tuple2<Integer, Integer>, Double>> predictionsNorPair = model
+                .predict(JavaRDD.toRDD(userProducts))
+                .toJavaRDD()
+                .map(r -> new Tuple2<>(new Tuple2<>(r.user(), r.product()), r.rating()));
+
         JavaPairRDD<Tuple2<Integer, Integer>, Double> predictions = JavaPairRDD.fromJavaRDD(predictionsNorPair);
 
+        JavaRDD<Tuple2<Double, Double>> ratesAndPreds = JavaPairRDD
+                .fromJavaRDD(ratings.map(r -> new Tuple2<>(new Tuple2<>(r.user(), r.product()), r.rating())))
+                .join(predictions)
+                .values();
 
-        JavaRDD<Tuple2<Double, Double>> ratesAndPreds = JavaPairRDD.fromJavaRDD(ratings.map(r -> new Tuple2<>(new Tuple2<Integer, Integer>(r.user(), r.product()), r.rating()))).join(predictions).values();;
-
-        Double MSE = ratesAndPreds.mapToDouble(pair -> (pair._1() - pair._2()) * (pair._1() - pair._2())).mean();
-
-        return MSE;
-
+        return ratesAndPreds.mapToDouble(pair -> (pair._1() - pair._2()) * (pair._1() - pair._2())).mean();
     }
 
     private static class ParseRating implements Function<String, Rating> {
@@ -287,11 +273,11 @@ public final class RecommenderService {
         }
 
         void returnReadModel(){
-            lock.readLock().unlock();;
+            lock.readLock().unlock();
         }
 
         void returnWriteModel(){
-            lock.writeLock().unlock();;
+            lock.writeLock().unlock();
         }
     }
 
