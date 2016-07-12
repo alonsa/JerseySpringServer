@@ -125,19 +125,27 @@
                 <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
                 <hr>
                 <div class="movie-body" >
+
                     <div class="movie-body-text" >
                         <div id="first-movie-title" >First Movie Title</div>
                         <div class="first-movie-plot" >First Movie Plot</div>
                     </div>
+
                     <div class="movie-body-action-area" >
                         <div id="timer" >Ends in: </div>
+                    </div>
+
+                    <div class = "change-button">
+                        <button  id="skip-button" onclick=skipButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img id = "skip-image" src="https://openclipart.org/download/161389/Next-Track.svg" height="40" ; border="0"/>
+                        </button>
                     </div>
                 </div>
 
             </div>
 
             <div class="actions-buttons">
-                <div class=button-header>&nbsp&nbsp&nbsp Next pic:</div>
+                <div class=button-header>&nbsp&nbsp&nbsp Next pick:</div>
 
                 <hr>
 
@@ -147,18 +155,9 @@
                         <div class="first-movie-plot" >Second Movie Plot</div>
                     </div>
 
-                    <div class = "up-down">
-                        <button class="up-down-button" type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img src="http://www.clker.com/cliparts/c/9/1/c/124568764843218829Soeb_Plain_Arrow_4.svg.med.png" height="20" onclick=upArrow(); border="0"/>
-                        </button>
-                        <button class="up-down-button" type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img src="http://www.clker.com/cliparts/9/1/e/7/1245687669879828181Soeb_Plain_Arrow_5.svg.med.png" height="20" onclick=downArrow(); />
-                        </button>
-                    </div>
-
                     <div class = "change-button">
-                        <button  id="changed-button" onclick=changedButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
-                            <img id = "button-image" src="http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png" height="40" ; border="0"/>
+                        <button  id="trash-button" onclick=trashButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                            <img id = "trash-image" src="https://openclipart.org/download/228856/1443908522.svg" height="40" ; border="0"/>
                         </button>
                     </div>
                 </div>
@@ -174,7 +173,6 @@
     var user;
     var youTubeUrl;
     var nextPlay;
-    var buttonState = "play";
 
     var qs = (function(a) {
         if (a == "") return {};
@@ -274,22 +272,12 @@
         }
     }
 
-    function upArrow () {
-        buttonState = "play";
-        document.getElementById('button-image').src = "http://www.clker.com/cliparts/e/5/a/2/1206570547560908424akiross_Audio_Button_Set_4.svg.med.png";
+    function skipButtonLogic() {
+        window.location.href = getRefreshPage();
     }
 
-    function downArrow () {
-        buttonState = "unLike";
-        document.getElementById('button-image').src = "https://openclipart.org/download/228856/1443908522.svg";
-    }
+    function trashButtonLogic() {
 
-    function changedButtonLogic() {
-
-        if (buttonState == "play"){
-            window.location.href = getRefreshPage();
-
-        }else{
             var  parsedUrl = url + qs["userName"] + "?play=" + nextPlay + "&like=false";
 
             var xmlhttp = new XMLHttpRequest();
@@ -318,9 +306,6 @@
                 localStorage.setItem("nextPlay", nextPlay);
                 localStorage.setItem("user", user);
             }
-
-            upArrow ();
-        }
     }
 
     window.onload = function () {
