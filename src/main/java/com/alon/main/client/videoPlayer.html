@@ -138,12 +138,12 @@
                 <div class="movie-body" >
 
                     <div class="movie-body-text" >
-                        <div id="first-movie-title" >First Movie Title</div>
-                        <div class="first-movie-plot" >First Movie Plot</div>
+                        <div id="first-movie-title"></div>
+                        <div id="first-movie-plot" ></div>
                     </div>
 
                     <div class="movie-body-action-area" >
-                        <div id="timer" >Ends in: </div>
+                        <div id="timer" ></div>
                     </div>
 
                     <div class = "change-button">
@@ -165,8 +165,8 @@
 
                 <div class="movie-body" >
                     <div class="movie-body-text" >
-                        <div id="second-movie-title" >Second Movie Title</div>
-                        <div class="first-movie-plot" >Second Movie Plot</div>
+                        <div id="second-movie-title" ></div>
+                        <div id="second-movie-plot" ></div>
                     </div>
 
                     <div class = "change-button">
@@ -230,6 +230,8 @@
 
         var firstElement = arr[0];
         document.getElementById("first-movie-title").innerHTML = firstElement.title;
+        document.getElementById("first-movie-plot").innerHTML = "First Movie Plot";
+
         var sec = firstElement.length / 1000;
         var minutes = formatNum(Math.floor(sec / 60));
         var seconds = formatNum(Math.floor(sec % 60));
@@ -238,6 +240,8 @@
 
         var secondElement = arr[1];
         document.getElementById('second-movie-title').innerHTML = secondElement.title;
+        document.getElementById("second-movie-plot").innerHTML = "Second Movie Plot";
+
         nextPlay = secondElement.id;
         localStorage.setItem("play", secondElement.id);
 
