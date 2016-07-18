@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>HTML5 Login</title>
 	<link rel="stylesheet" href="normalize.css">
 	<link rel="stylesheet" href="style.css">
 </head>
+
+<script>
+	var user;
+	function login() {
+		sessionStorage.setItem("userName", document.getElementById("userName"))
+	}
+</script>
+
 <body>
 	<section class="loginform cf">
-		<form name="login" action="index_submit" method="get" accept-charset="utf-8">
+		<form name="login" action="videoPlayer.html" method="get" accept-charset="utf-8">
 			<ul>
 				<li>
-					<label for="usermail">Email</label>
-					<input type="email" name="usermail" placeholder="yourname@email.com" required>
+					<label for="userName">User name</label>
+					<input type="text" id="userName" name="userName" placeholder="name" required>
 				</li>
 				<li>
-					<label for="password">Password</label>
-					<input type="password" name="password" placeholder="password" required></li>
-				<li>
-					<input type="submit" value="Login">
+					<input type="submit" value="Login" onclick="login">
 				</li>
 			</ul>
 		</form>
