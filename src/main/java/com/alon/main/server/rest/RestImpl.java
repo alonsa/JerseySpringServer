@@ -63,8 +63,6 @@ public class RestImpl {
 	public Epg recommand(@PathParam("id") String userName, @QueryParam("num") Integer recommandNum) {
 
 		List<Epg> moviesToRecommand = getEpgRecommendationForUser(userName);
-
-
 		return moviesToRecommand.get(0);
 	}
 

@@ -140,7 +140,7 @@ public class Epg {
 
             YouTubeClient youTubeClient = new YouTubeClient();
             Optional<Long> optionalVodLength = youTubeClient.getVodLength(youTubeId);
-            this.length = optionalVodLength.orElse(null);
+            this.length = optionalVodLength.orElse(2L);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

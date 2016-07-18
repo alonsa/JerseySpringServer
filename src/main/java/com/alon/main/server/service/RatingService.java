@@ -22,6 +22,9 @@ public class RatingService {
     @Autowired
     public RatingMorphiaDaoImpl ratingDao;
 
+    @Autowired
+    public RecommenderService recommenderService;
+
     public List<Rating> getAllToList() {
         return ratingDao.getAllToList();
     }
@@ -47,6 +50,8 @@ public class RatingService {
         Double normalRating = like ? 5.0 : 0.0;
         Rating rating = new Rating(user, movie, normalRating);
         ratingDao.save(rating);
+
+        recommenderService.updateModel(new org.apache.spark.mllib.recommendation.Rating(rating.getUserId(), rating.getMovieId(), rating.getRating()));
     }
 
 

@@ -32,18 +32,10 @@ public  class Consts {
 
 
     // Recommander
-    public static final String OUTPUT_DIR = "/Users/alon_ss/Learning/Recommender/outputDir";
-    public static final String USER_FEATURES_PATH = OUTPUT_DIR + "/userFeatures";
-    public static final String PRODUCT_FEATURES_PATH = OUTPUT_DIR + "/productFeatures";
-    public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest";
-
-    // public static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest-small";
-    public static final String RATINGS_PATH = BASE_PATH + "/ratings.csv";
-    public static final String MODEL_PATH = OUTPUT_DIR + "/model";
-    public static final String MODEL_TEMP_PATH = OUTPUT_DIR + "/tempmModel";
     public static final Pattern COMMA = Pattern.compile(",");
 
     // BaseDao
+    private static final String BASE_PATH = "/Users/alon_ss/Learning/Recommender/ml-latest";
     public static final String MOVIES_PATH = BASE_PATH + "/movies.csv";
     public static final Pattern VERTICAL_BAR = Pattern.compile("\\|");
     public static final String HOST = "localhost";
