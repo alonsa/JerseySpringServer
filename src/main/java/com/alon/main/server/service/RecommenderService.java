@@ -221,7 +221,7 @@ public final class RecommenderService {
 
         Integer prefix = newRating.rating() > 3 ? likePrefix : unLikePrefix;
 
-        int ratingUserNum = product + prefix;
+        int ratingUserNum = prefix + product ;
 
         List<double[]> userVector = JavaPairRDD.fromJavaRDD(userFeatures).lookup(user);
         List<double[]> ratingUser = JavaPairRDD.fromJavaRDD(userFeatures).lookup(ratingUserNum);
@@ -240,15 +240,20 @@ public final class RecommenderService {
 
     }
 
-    private List<double[]> addVectors(List<double[]> userVector6, List<double[]> userVector7, Integer num) {
-        double[] userVector67List = new double[userVector6.get(0).length];
+    private List<double[]> addVectors(List<double[]> originVector, List<double[]> newVector, Integer num) {
+
+        if (newVector.isEmpty()){
+            return originVector;
+        }
+
+        double[] userVector67List = new double[originVector.get(0).length];
         int retio = 1;
         if (num != null){
             retio = 1 / (num + 1);
         }
 
         for (int i = 0; i < 10; i++) {
-            Double pluse = userVector6.get(0)[i] + (userVector7.get(0)[i] * retio);
+            Double pluse = originVector.get(0)[i] + (newVector.get(0)[i] * retio);
             userVector67List[i] = pluse;
         }
 
@@ -324,16 +329,14 @@ public final class RecommenderService {
 
         List<Rating> dbRatingList = ratingService.getAllToList().stream().map(this::toRating).collect(Collectors.toList());
 
-        JavaRDD<Integer> loveIts = fileRatings.groupBy(Rating::product).keys();
-
         JavaRDD<Rating> loveIt = fileRatings.groupBy(Rating::product).keys().map(new ParseLikeRatingFromProduct());
-//        JavaRDD<Rating> hateIt = fileRatings.groupBy(Rating::product).keys().map(new ParseUnLikeRatingFromProduct());
+        JavaRDD<Rating> hateIt = fileRatings.groupBy(Rating::product).keys().map(new ParseUnLikeRatingFromProduct());
 
         JavaRDD<Rating> dbRatings = sc.parallelize(dbRatingList);
         return fileRatings.
                 union(dbRatings).
                 union(loveIt).
-//                union(hateIt).
+                union(hateIt).
                 distinct();
     }
 

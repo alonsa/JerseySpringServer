@@ -30,24 +30,27 @@ public class RestImpl {
 //		http://localhost:8090/recommend/epg/9021
 //		http://localhost:8090/recommend/epgs/9021
 
-
 	private final static Logger logger = Logger.getLogger(RestImpl.class);
 
-	@Autowired
-	public RecommenderService recommenderService;
+	private final RecommenderService recommenderService;
 
-	@Autowired
-	public UserService userService;
+	private final UserService userService;
 
-	@Autowired
-	public RatingService ratingService;
+	private final RatingService ratingService;
 
-	@Autowired
-	public MovieService movieService;
+	private final MovieService movieService;
 
 	@DefaultValue(RESPONSE_NUM) @QueryParam("num") Integer recommandNum;
 	@QueryParam("play") String play;
 	@DefaultValue("true") @QueryParam("like") boolean like;
+
+	@Autowired
+	public RestImpl(RecommenderService recommenderService, UserService userService, MovieService movieService, RatingService ratingService) {
+		this.recommenderService = recommenderService;
+		this.userService = userService;
+		this.movieService = movieService;
+		this.ratingService = ratingService;
+	}
 
 	@GET
 	@Path("epgs/{id}")
@@ -120,7 +123,6 @@ public class RestImpl {
 		Long epgLength = epgs.stream().findFirst().map(Epg::getLength).orElse(null);
 
 		addMovieLengthFromEpg(firstMovie, epgLength);
-
 
 		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
 
