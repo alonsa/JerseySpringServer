@@ -56,6 +56,7 @@ public class RestImpl {
 	@Path("epgs/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public List<Epg> recommands(@PathParam("id") String userName) {
+		logger.debug("Get Request to /epgs/"+ userName + "?play=" + play + "&like=" + like + "&num=" + recommandNum);
 
 		return getEpgRecommendationForUser(userName);
 	}
@@ -63,7 +64,7 @@ public class RestImpl {
 	@GET
 	@Path("epg/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Epg recommand(@PathParam("id") String userName, @QueryParam("num") Integer recommandNum) {
+	public Epg recommand(@PathParam("id") String userName) {
 
 		List<Epg> moviesToRecommand = getEpgRecommendationForUser(userName);
 		return moviesToRecommand.get(0);
@@ -71,8 +72,12 @@ public class RestImpl {
 
 	private List<Epg> getEpgRecommendationForUser(String userName) {
 
+
 		// Get or create user
+		logger.debug("Look for user: " + userName);
 		User user = userService.getUserByName(userName);
+		logger.debug("Found user:" + user);
+
 
 		Optional<Movie> optionalPlayMovie = Optional.empty();
 		if (play != null && ObjectId.isValid(play)){
@@ -80,17 +85,24 @@ public class RestImpl {
 			optionalPlayMovie = Optional.ofNullable(movie);
 		}
 
+		logger.debug("Playing movie:" + optionalPlayMovie);
+
 		// Add rating by the time the user watched the asset
+		logger.debug("Add rating by the time the user watched the asset");
 		ratingService.addRating(user);
 
-		// add rating by the user action (want to play or unlike the asset)
+		// Add rating by the user action (want to play or unlike the asset)
+		logger.debug("Add rating by the user action (want to play or unlike the asset)");
 		optionalPlayMovie.ifPresent(movie -> ratingService.addRating(user.getInnerId(), movie.getInnerId(), like));
 
 		// Calculate number of asked recommendations
 		Integer recommendationNumber = user.getRecentlyWatch().size() + recommandNum;
+		logger.debug("Number of asked recommendations: " +  recommendationNumber);
+
 
 		// Get recommended vods Ids
 		List<Integer> recommendedMoviesInnerIds = recommenderService.recommend(user.getInnerId(), recommendationNumber);
+		logger.debug("Recommended vods Ids: " +  recommendedMoviesInnerIds);
 
 		// Get the movies by the Ids
 		List<Movie> dbMovies = movieService.getByInnerIds(recommendedMoviesInnerIds);
@@ -127,6 +139,7 @@ public class RestImpl {
 		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
 
 		userService.save(user); // TODO: need to update by field
+		logger.debug("Update user: " +  user);
 
 		logger.debug("Response: " + epgs);
 
