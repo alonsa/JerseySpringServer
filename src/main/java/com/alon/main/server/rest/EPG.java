@@ -4,14 +4,12 @@ import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.YouTubeClient;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.CharMatcher;
+import com.google.common.collect.Lists;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by alon_ss on 7/6/16.
@@ -41,9 +39,10 @@ public class Epg {
         this.genres = movie.getGenres();
 
         this.title = Optional.ofNullable(movie.getTitle()).map(CharMatcher.ASCII::retainFrom).orElse(null);
-        this.uri = Optional.ofNullable(convertToEmbedUri(movie.getUri())).orElse(getDefualtUri()).toString();
+        Optional<URI> optionalUri = Optional.ofNullable(convertToEmbedUri(movie.getUri()));
+        this.uri = optionalUri.orElse(getDefualtUri()).toString();
 
-        setLengthFromYouTube();
+        optionalUri.ifPresent(x -> setLengthFromYouTube());
     }
 
     public String getId() {
@@ -131,6 +130,7 @@ public class Epg {
     }
 
     private void setLengthFromYouTube() {
+        Optional<Long> optionalVodLength = Optional.empty();
         try {
             String youTubeId = (new  URI(this.uri)).getPath().
                     replace("https://", "").
@@ -139,30 +139,40 @@ public class Epg {
                     replace("/", "");
 
             YouTubeClient youTubeClient = new YouTubeClient();
-            Optional<Long> optionalVodLength = youTubeClient.getVodLength(youTubeId);
-            this.length = optionalVodLength.orElse(2L);
+            optionalVodLength = youTubeClient.getVodLength(youTubeId);
+
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+
+        optionalVodLength.ifPresent(x -> this.length = x);
     }
 
     @Deprecated
     private URI getDefualtUri() {
 
-        List<URI> uris = new ArrayList<>();
+        Map<URI, Long> urisToLength = new HashMap<>();
         try {
-            uris.add(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"));
-            uris.add(new URI("https://www.youtube.com/embed/DhNMHcRSNdo?autoplay=1"));
-            uris.add(new URI("https://www.youtube.com/embed/hvha-7EvwNg?autoplay=1"));
-            uris.add(new URI("https://www.youtube.com/embed/kvg9GxWjgIw?autoplay=1"));
-            uris.add(new URI("https://www.youtube.com/embed/OT9HsNszYCI?autoplay=1"));
+            urisToLength.put(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"), 25000L);
+            urisToLength.put(new URI("https://www.youtube.com/embed/DhNMHcRSNdo?autoplay=1"), 13000L);
+            urisToLength.put(new URI("https://www.youtube.com/embed/hvha-7EvwNg?autoplay=1"), 31000L);
+            urisToLength.put(new URI("https://www.youtube.com/embed/kvg9GxWjgIw?autoplay=1"), 14000L);
+            urisToLength.put(new URI("https://www.youtube.com/embed/OT9HsNszYCI?autoplay=1"), 15000L);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
-        int index = (Math.abs(id.hashCode()) % uris.size());
+        int index = (Math.abs(id.hashCode()) % urisToLength.size());
 
-        return uris.get(index);
+
+        List<URI> urls = new ArrayList<>();
+
+        urls.addAll(urisToLength.keySet());
+        URI defaultUri = urls.get(index);
+        Long defaultUriLength = urisToLength.get(defaultUri);
+        length = defaultUriLength;
+
+        return defaultUri;
     }
 
 }

@@ -8,10 +8,10 @@ import org.json.JSONObject;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 import java.net.URI;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static com.alon.main.server.Const.Consts.*;
@@ -41,10 +41,10 @@ public class YouTubeClient {
 
         Optional<Long> durationOptional = Optional.empty();
         try {
-            durationOptional = HttpClient.
-                    call(url.toString()).
-                    thenApply(Response::getResponseBody).
-                    thenApply(JSONObject::new).
+
+            CompletableFuture<JSONObject> data = getDataFromYoutube(url);
+
+            durationOptional = data.
                     thenApply(this::getDuration).
                     exceptionally(ex -> Optional.empty()).get();
 
@@ -54,6 +54,13 @@ public class YouTubeClient {
 
         return durationOptional;
 
+    }
+
+    protected CompletableFuture<JSONObject> getDataFromYoutube(URI url) {
+        return HttpClient.
+                call(url.toString()).
+                thenApply(Response::getResponseBody).
+                thenApply(JSONObject::new);
     }
 
 
@@ -66,11 +73,15 @@ public class YouTubeClient {
 
             if (results.length() > 0){
                 JSONObject json = results.getJSONObject(0);
-                String durationString = json.getJSONObject("contentDetails").getString("duration");
-                try {
-                    duration = Optional.of(DatatypeFactory.newInstance().newDuration(durationString).getTimeInMillis(new Date()));
-                } catch (DatatypeConfigurationException e) {
-                    e.printStackTrace();
+
+                JSONObject contentDetails = json.getJSONObject("contentDetails");
+                if (contentDetails.isNull("regionRestriction")){
+                    String durationString = contentDetails.getString("duration");
+                    try {
+                        duration = Optional.of(DatatypeFactory.newInstance().newDuration(durationString).getTimeInMillis(new Date()));
+                    } catch (DatatypeConfigurationException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
