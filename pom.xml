@@ -29,19 +29,19 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>2.17</version>
+			<version>${jersey.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>2.17</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<!-- Jersey + Spring -->
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring3</artifactId>
-			<version>2.17</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<!--&lt;!&ndash; Jersey + Spring &ndash;&gt;-->
@@ -101,23 +101,23 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>2.17</version>
+			<version>${jersey.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>2.5.3</version>
+			<version>${fasterxml.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.5.3</version>
+			<version>${fasterxml.jackson}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.5.3</version>
+			<version>${fasterxml.jackson}</version>
 		</dependency>
 
 	</dependencies>
@@ -130,7 +130,8 @@
 
 	<properties>
 		<spring.version>4.3.0.RELEASE</spring.version>
-		<jersey.version>1.19.1</jersey.version>
+		<jersey.version>2.17</jersey.version>
+		<fasterxml.jackson>2.5.3</fasterxml.jackson>
 	</properties>
 
 	<repositories>
