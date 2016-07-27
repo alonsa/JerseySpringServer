@@ -1,6 +1,9 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.Const.MovieSite;
+import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
+import com.alon.main.server.movieProvider.TmdbClient;
 import com.alon.main.server.movieProvider.YouTubeClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +12,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -23,6 +28,8 @@ public class IntooiTVMockService {
     @Autowired
     private MovieService movieService;
 
+    TmdbClient tmdbClient = new TmdbClient();
+
     @Deprecated
     public Movie fillMovieData(Movie movie){
 
@@ -33,6 +40,26 @@ public class IntooiTVMockService {
             optionalUri.ifPresent(x -> setLengthFromYouTube(movie));
 
             movieService.saveMovie(movie);
+        }
+
+        if (movie.getPlot() == null){
+            Optional<String> optionalTmdbId = movie.getExternalIds().stream().
+                    filter(external -> external.getSiteName().equals(MovieSite.TMDB)).map(ExternalId::getId).findFirst();
+
+            if (!optionalTmdbId.isPresent()){
+                System.out.println("Movie has no TmdbId. " + movie); // TODO: remove all System.out.println from code
+
+            }else{
+                CompletableFuture<Optional<String>> futureString = tmdbClient.getFutureOverview(optionalTmdbId.orElse(null));
+                Optional<String> overviewOption = Optional.empty();
+                try {
+                    overviewOption = futureString.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+                movie.setPlot(overviewOption.orElse(null));
+                movieService.saveMovie(movie);
+            }
         }
         return movie;
     }
