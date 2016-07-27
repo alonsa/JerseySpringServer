@@ -1,6 +1,8 @@
 package com.alon.main.server.movieProvider;
 
+import com.alon.main.server.dbMigrtor.DbMigrator;
 import com.alon.main.server.http.HttpClient;
+import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,6 +22,7 @@ import static com.alon.main.server.Const.Consts.*;
  */
 public class TmdbClient implements MovieProviderClient {
 
+    private final static Logger logger = Logger.getLogger(TmdbClient.class);
 
     @Override
     public CompletableFuture<Optional<String>> getFutureTrailer(String vodId) {
@@ -36,11 +39,31 @@ public class TmdbClient implements MovieProviderClient {
                 queryParam(TMDB_APP_ID, TMDB_KEY).
                 build();
 
+        return HttpClient.call(url.toString()).
+                thenApply(Response::getResponseBody).
+                thenApply(JSONObject::new).
+                thenApply(this::getLengthFromeJson).exceptionally(ex -> Optional.empty());
+
+    }
+
+    @Override
+    public CompletableFuture<Optional<String>> getFutureOverview(String vodId) {
+
+        if (vodId == null){
+            return new CompletableFuture<>();
+        }
+
+        URI url = UriBuilder.
+                fromUri(TMDB_BASE_URL).
+                path(TMDB_MOVIE).
+                path(vodId).
+                queryParam(TMDB_APP_ID, TMDB_KEY).
+                build();
 
         return HttpClient.call(url.toString()).
                 thenApply(Response::getResponseBody).
                 thenApply(JSONObject::new).
-                thenApply(this::parseJson).exceptionally(ex -> Optional.empty());
+                thenApply(this::getOverviewFromeJson).exceptionally(ex -> Optional.empty());
 
     }
 
@@ -55,10 +78,10 @@ public class TmdbClient implements MovieProviderClient {
         }
     }
 
-    private  Optional<String> parseJson(JSONObject tmdbJson){
+    private  Optional<String> getLengthFromeJson(JSONObject tmdbJson){
         List<JSONObject> list = new ArrayList<JSONObject>();
 
-        System.out.println(tmdbJson);
+        logger.debug(tmdbJson);
 
         if (!tmdbJson.isNull("results")){
             JSONArray results = tmdbJson.getJSONArray("results");
@@ -77,5 +100,17 @@ public class TmdbClient implements MovieProviderClient {
 
     }
 
+    private  Optional<String> getOverviewFromeJson(JSONObject tmdbJson){
+
+        logger.debug(tmdbJson);
+
+        Optional<String> overview = Optional.empty();
+
+        if (!tmdbJson.isNull("overview")){
+            overview = Optional.ofNullable(tmdbJson.getString("overview"));
+        }
+
+        return overview;
+    }
 
 }
