@@ -1,6 +1,7 @@
 package com.alon.main.server.movieProvider;
 
 import com.alon.main.server.http.HttpClient;
+import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,6 +25,7 @@ public class YouTubeClient {
 
 //    https://www.googleapis.com/youtube/v3/videos?id=DhNMHcRSNdo&part=contentDetails&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
 
+    private final static Logger logger = Logger.getLogger(YouTubeClient.class);
 
     public Optional<Long> getVodLength(String vodId) {
 
@@ -66,7 +68,7 @@ public class YouTubeClient {
 
     private  Optional<Long> getDuration(JSONObject youTubeJson){
         Optional<Long> duration = Optional.empty();
-        System.out.println(youTubeJson);
+        logger.debug(youTubeJson);
 
         if (!youTubeJson.isNull("items")){
             JSONArray results = youTubeJson.getJSONArray("items");

@@ -3,6 +3,7 @@ package com.alon.main.server.dbMigrtor;
 import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.MovieProvider;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -13,6 +14,8 @@ import java.util.*;
  */
 //@Service //- Just to save all movies in DB
 public final class DbMigrator {
+
+    private final static Logger logger = Logger.getLogger(DbMigrator.class);
 
     @Autowired
 	public MovieMemoryDaoImpl movieMemoryDaoImpl;
@@ -43,8 +46,8 @@ public final class DbMigrator {
 
             if (movie.getUri() == null){
 
-                System.out.println(i);
-                System.out.println(movie);
+                logger.debug(i);
+                logger.debug(movie);
 
                 String trailer = movieProvider.getYouTubeTrailer(movie);
 
@@ -52,7 +55,7 @@ public final class DbMigrator {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("uri", trailer);
 
-                    System.out.println("UPDATE trailer" + trailer);
+                    logger.debug("UPDATE trailer" + trailer);
 
                     movieBaseDao.updateByField(movie, map);
                     try {
@@ -95,8 +98,8 @@ public final class DbMigrator {
 
             if (movie.getUri() == null){
 
-                System.out.println(i);
-                System.out.println(movie);
+                logger.debug(i);
+                logger.debug(movie);
 
                 String trailer =  movieProvider.get(i % movieProvider.size());
 
@@ -104,7 +107,7 @@ public final class DbMigrator {
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("uri", trailer);
 
-                    System.out.println("UPDATE trailer" + trailer);
+                    logger.debug("UPDATE trailer" + trailer);
 
                     movieBaseDao.updateByField(movie, map);
 

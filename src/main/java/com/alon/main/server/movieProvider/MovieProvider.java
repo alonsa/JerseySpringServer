@@ -3,6 +3,8 @@ package com.alon.main.server.movieProvider;
 import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
+import com.alon.main.server.rest.RestImpl;
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -18,8 +20,8 @@ import static com.alon.main.server.Const.Consts.V_QUERY_PARAM;
  */
 public class MovieProvider {
 
-
     private TmdbClient tmdbClient = new TmdbClient();
+    private final static Logger logger = Logger.getLogger(MovieProvider.class);
 
     public CompletableFuture<Optional<String>> getYouTubeFutureTrailer(Movie movie){
 
@@ -31,7 +33,7 @@ public class MovieProvider {
                 filter(external -> external.getSiteName().equals(MovieSite.TMDB)).map(ExternalId::getId).findFirst();
 
         if (!optionalTmdbId.isPresent()){
-            System.out.println("Movie has no TmdbId. " + movie);
+            logger.warn("Movie has no TmdbId. " + movie);
             return CompletableFuture.completedFuture(Optional.empty());
         }else{
             CompletableFuture<Optional<String>> futureString = tmdbClient.getFutureTrailer(optionalTmdbId.orElse(null));
@@ -55,7 +57,7 @@ public class MovieProvider {
         }
 
         if (!optionalUri.isPresent()){
-            System.out.println("Movie has no trailer. " + movie);
+            logger.warn("Movie has no trailer. " + movie);
         }
 
         return optionalUri.orElse(null);
