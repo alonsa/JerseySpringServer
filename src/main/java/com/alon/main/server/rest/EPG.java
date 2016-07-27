@@ -1,15 +1,12 @@
 package com.alon.main.server.rest;
 
 import com.alon.main.server.entities.Movie;
-import com.alon.main.server.movieProvider.YouTubeClient;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.CharMatcher;
-import com.google.common.collect.Lists;
 
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by alon_ss on 7/6/16.
@@ -29,9 +26,6 @@ public class Epg {
 
     private List<String> genres = new ArrayList<>();
 
-    Epg() {
-    }
-
     Epg(Movie movie) {
         this.id = movie.getId().toString();
         this.plot = movie.getPlot();
@@ -39,10 +33,8 @@ public class Epg {
         this.genres = movie.getGenres();
 
         this.title = Optional.ofNullable(movie.getTitle()).map(CharMatcher.ASCII::retainFrom).orElse(null);
-        Optional<URI> optionalUri = Optional.ofNullable(convertToEmbedUri(movie.getUri()));
-        this.uri = optionalUri.orElse(getDefualtUri()).toString();
-
-        optionalUri.ifPresent(x -> setLengthFromYouTube());
+        this.uri = movie.getUri().toString();
+        this.length = movie.getLength();
     }
 
     public String getId() {
@@ -105,74 +97,5 @@ public class Epg {
                 '}';
     }
 
-    @Deprecated
-    private URI convertToEmbedUri(URI uri){
-        URI newUri = null;
-        if (uri != null){
-            newUri = UriBuilder.
-                    fromPath(uri.getHost()).
-                    path("embed").
-                    path(getYouTubeId(uri)).
-                    queryParam("autoplay", 1).
-                    build();
-
-        }
-        return newUri;
-    }
-
-    @Deprecated
-    private String getYouTubeId(URI uri){
-        String youTubeId = null;
-        if (uri != null){
-            youTubeId = uri.getQuery().replace("v=", "");
-        }
-        return youTubeId;
-    }
-
-    private void setLengthFromYouTube() {
-        Optional<Long> optionalVodLength = Optional.empty();
-        try {
-            String youTubeId = (new  URI(this.uri)).getPath().
-                    replace("https://", "").
-                    replace("www.youtube.com", "").
-                    replace("embed", "").
-                    replace("/", "");
-
-            YouTubeClient youTubeClient = new YouTubeClient();
-            optionalVodLength = youTubeClient.getVodLength(youTubeId);
-
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        optionalVodLength.ifPresent(x -> this.length = x);
-    }
-
-    @Deprecated
-    private URI getDefualtUri() {
-
-        Map<URI, Long> urisToLength = new HashMap<>();
-        try {
-            urisToLength.put(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"), 25000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/DhNMHcRSNdo?autoplay=1"), 13000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/hvha-7EvwNg?autoplay=1"), 31000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/kvg9GxWjgIw?autoplay=1"), 14000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/OT9HsNszYCI?autoplay=1"), 15000L);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        int index = (Math.abs(id.hashCode()) % urisToLength.size());
-
-
-        List<URI> urls = new ArrayList<>();
-
-        urls.addAll(urisToLength.keySet());
-        URI defaultUri = urls.get(index);
-        Long defaultUriLength = urisToLength.get(defaultUri);
-        length = defaultUriLength;
-
-        return defaultUri;
-    }
 
 }

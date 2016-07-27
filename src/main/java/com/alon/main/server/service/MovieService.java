@@ -26,6 +26,10 @@ public class MovieService {
         return movieBaseDao.getByInnerIds(moviesInnerIds);
     }
 
+    public void saveMovie(Movie movie){
+        movieBaseDao.save(movie);
+    }
+
     public Movie getById(ObjectId movieId) {
         return movieBaseDao.getById(movieId);
     }

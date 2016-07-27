@@ -2,11 +2,9 @@ package com.alon.main.server.rest;
 
 import com.alon.main.server.entities.CurrentlyWatch;
 import com.alon.main.server.entities.Movie;
+import com.alon.main.server.entities.Rating;
 import com.alon.main.server.entities.User;
-import com.alon.main.server.service.MovieService;
-import com.alon.main.server.service.RatingService;
-import com.alon.main.server.service.RecommenderService;
-import com.alon.main.server.service.UserService;
+import com.alon.main.server.service.*;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +38,24 @@ public class RestImpl {
 
 	private final MovieService movieService;
 
+	private final IntooiTVMockService intooiTVMockService;
+
 	@DefaultValue(RESPONSE_NUM) @QueryParam("num") Integer recommandNum;
 	@QueryParam("play") String play;
 	@DefaultValue("true") @QueryParam("like") boolean like;
 
 	@Autowired
-	public RestImpl(RecommenderService recommenderService, UserService userService, MovieService movieService, RatingService ratingService) {
+	public RestImpl(RecommenderService recommenderService,
+					UserService userService,
+					MovieService movieService,
+					RatingService ratingService,
+					IntooiTVMockService intooiTVMockService) {
+
 		this.recommenderService = recommenderService;
 		this.userService = userService;
 		this.movieService = movieService;
 		this.ratingService = ratingService;
+		this.intooiTVMockService = intooiTVMockService;
 	}
 
 	@GET
@@ -72,12 +78,10 @@ public class RestImpl {
 
 	private List<Epg> getEpgRecommendationForUser(String userName) {
 
-
 		// Get or create user
 		logger.debug("Look for user: " + userName);
 		User user = userService.getUserByName(userName);
 		logger.debug("Found user:" + user);
-
 
 		Optional<Movie> optionalPlayMovie = Optional.empty();
 		if (play != null && ObjectId.isValid(play)){
@@ -93,7 +97,12 @@ public class RestImpl {
 
 		// Add rating by the user action (want to play or unlike the asset)
 		logger.debug("Add rating by the user action (want to play or unlike the asset)");
-		optionalPlayMovie.ifPresent(movie -> ratingService.addRating(user.getInnerId(), movie.getInnerId(), like));
+		optionalPlayMovie.ifPresent(movie -> {
+			Rating rating = ratingService.addRating(user.getInnerId(), movie.getInnerId(), like);
+			org.apache.spark.mllib.recommendation.Rating recommendationRating =
+					new org.apache.spark.mllib.recommendation.Rating(rating.getUserId(), rating.getMovieId(), rating.getRating());
+			recommenderService.updateModel(recommendationRating);
+		});
 
 		// Calculate number of asked recommendations
 		Integer recommendationNumber = user.getRecentlyWatch().size() + recommandNum;
@@ -129,12 +138,13 @@ public class RestImpl {
 		}
 
 		// Convert movies to Epg
-		List<Epg> epgs = filteredMovie.stream().limit(recommandNum).map(Epg::new).collect(Collectors.toList());
+		List<Epg> epgs = filteredMovie.stream().
+				limit(recommandNum).
+				map(intooiTVMockService::fillMovieData).
+				map(Epg::new).
+				collect(Collectors.toList());
 
 		Optional<Movie> firstMovie = filteredMovie.stream().findFirst();
-		Long epgLength = epgs.stream().findFirst().map(Epg::getLength).orElse(null);
-
-		addMovieLengthFromEpg(firstMovie, epgLength);
 
 		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
 
@@ -143,15 +153,7 @@ public class RestImpl {
 
 		logger.debug("Response: " + epgs);
 
-//		recommenderService.setModelAsync();
-
 		return epgs;
 	}
-
-	@Deprecated
-	private void addMovieLengthFromEpg(Optional<Movie> firstMovie, Long epgLength) {
-		firstMovie.ifPresent(movie -> movie.setLength(epgLength));
-	}
-
 
 }

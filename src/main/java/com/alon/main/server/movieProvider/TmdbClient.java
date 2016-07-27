@@ -18,7 +18,7 @@ import static com.alon.main.server.Const.Consts.*;
 /**
  * Created by alon_ss on 6/29/16.
  */
-public class TmdbClient  implements MovieProviderClient {
+public class TmdbClient implements MovieProviderClient {
 
 
     @Override

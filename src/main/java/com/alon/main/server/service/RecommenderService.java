@@ -49,9 +49,6 @@ public final class RecommenderService {
     @Autowired
     RatingService ratingService;
 
-    @Autowired
-    MovieService movieService;
-
     @Value("${spark.thread.num}")
     private String threadNumber;
 
