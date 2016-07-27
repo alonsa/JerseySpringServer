@@ -1,15 +1,13 @@
 package com.alon.main.server.entities;
 
-import org.bson.types.ObjectId;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import org.mongodb.morphia.annotations.Embedded;
 
 /**
  * Created by alon_ss on 7/10/16.
  */
 public class CurrentlyWatch {
+
+    @Embedded
     private Movie movie;
     private Long startWatchTime;
 

@@ -25,6 +25,19 @@ copy to server:
 5. sudo cp ServerSide.war /usr/share/tomcat8/webapps/ServerSide.war
 6. sudo service tomcat8 stop
 7. sudo service tomcat8 start
+8. sudo vi /usr/share/tomcat8/webapps/ServerSide/WEB-INF/classes/application.properties
+9. sudo service tomcat8 stop
+10. sudo service tomcat8 start
+
+
+copy client:
+!!! - CHECK THAT "var url" SET TO SERVER - !!!
+1. go to: cd /usr/local/etc/openssl/
+2. go to the file in intellij
+3. right click and "reveadl in finder"
+4. copy file to "/Users/alon_ss/Learning/Recommender/simpleServer/target/"
+5. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/videoPlayer.html ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:videoPlayer.html/
+6. sudo cp videoPlayer.html /usr/share/tomcat8/webapps/intooitv/videoPlayer.html
 
 Logs:
 1.  sudo -i

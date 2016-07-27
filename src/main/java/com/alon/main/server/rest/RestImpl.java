@@ -125,16 +125,15 @@ public class RestImpl {
 		HashSet<ObjectId> userRecentlyWatch = new HashSet<>(user.getRecentlyWatch());
 
 		// Filter out the movies from the user recently watch list
-		List<Movie> filteredMovie = recommendedMovies.stream()
-				.filter(movie -> !userRecentlyWatch.contains(movie.getId()))
-				.collect(Collectors.toList());
+		List<Movie> filteredMovie = recommendedMovies.stream().
+				filter(movie -> !userRecentlyWatch.contains(movie.getId())).
+				limit(recommandNum).
+				collect(Collectors.toList());
 
 		// Add next play movie to the head of returned movies
+		optionalPlayMovie.ifPresent(filteredMovie::remove);
 		if (like){
-			optionalPlayMovie.ifPresent(movie -> {
-				filteredMovie.remove(movie);
-				filteredMovie.add(0, movie);
-			});
+			optionalPlayMovie.ifPresent(movie -> filteredMovie.add(0, movie));
 		}
 
 		// Convert movies to Epg
