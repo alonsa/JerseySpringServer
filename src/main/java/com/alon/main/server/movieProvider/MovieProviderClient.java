@@ -9,5 +9,6 @@ import java.util.concurrent.CompletableFuture;
 interface MovieProviderClient {
 
     public CompletableFuture<Optional<String>> getFutureTrailer(String vodId);
+    public CompletableFuture<Optional<String>> getFutureOverview(String vodId);
     public Optional<String> getTrailer(String vodId);
 }
