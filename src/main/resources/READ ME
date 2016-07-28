@@ -20,14 +20,16 @@ sudo service mongod start
 copy to server:
 1. go to: cd /usr/local/etc/openssl/
 2. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/ServerSide.war ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:ServerSide.war
-3. sudo rm -rf /usr/share/tomcat8/webapps/ServerSide
-4. sudo rm -rf /usr/share/tomcat8/webapps/ServerSide.war
-5. sudo cp ServerSide.war /usr/share/tomcat8/webapps/ServerSide.war
-6. sudo service tomcat8 stop
-7. sudo service tomcat8 start
-8. sudo vi /usr/share/tomcat8/webapps/ServerSide/WEB-INF/classes/application.properties
-9. sudo service tomcat8 stop
-10. sudo service tomcat8 start
+§3. sudo ssh -i intooiTV.pem ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com
+4. sudo rm -rf /usr/share/tomcat8/webapps/ServerSide
+5. sudo rm -rf /usr/share/tomcat8/webapps/ServerSide.war
+6. sudo cp ServerSide.war /usr/share/tomcat8/webapps/ServerSide.war
+7. sudo service tomcat8 stop
+8. sudo service tomcat8 start
+9. sudo vi /usr/share/tomcat8/webapps/ServerSide/WEB-INF/classes/application.properties
+10. sudo service tomcat8 stop
+11. sudo service tomcat8 start
+12. delete USER index from mongo  - its a bug!!!
 
 
 copy client:
@@ -36,8 +38,9 @@ copy client:
 2. go to the file in intellij
 3. right click and "reveadl in finder"
 4. copy file to "/Users/alon_ss/Learning/Recommender/simpleServer/target/"
-5. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/videoPlayer.html ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:videoPlayer.html/
-6. sudo cp videoPlayer.html /usr/share/tomcat8/webapps/intooitv/videoPlayer.html
+5. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/videoPlayer.html ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:videoPlayer.html
+6. sudo ssh -i intooiTV.pem ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com
+7. sudo cp videoPlayer.html /usr/share/tomcat8/webapps/intooitv/videoPlayer.html
 
 Logs:
 1.  sudo -i
