@@ -36,14 +36,14 @@ public class IntooiTVMockService {
     @Deprecated
     public Movie fillMovieData(Movie movie){
 
-//        if (movie.getLength() == null){
+        if (movie.getLength() == null){
             Optional<URI> optionalUri = convertToEmbedUri(movie.getUri());
             URI uri  = optionalUri.orElse(getDefaultUri(movie));
             movie.setUri(uri);
             optionalUri.ifPresent(x -> setLengthFromYouTube(movie));
 
-//            movieService.saveMovie(movie);
-//        }
+            movieService.saveMovie(movie);
+        }
 
         if (movie.getPlot() == null){
             Optional<String> optionalTmdbId = movie.getExternalIds().stream().
