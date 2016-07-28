@@ -135,6 +135,13 @@
             vertical-align: top;
         }
 
+        #first-movie-plot::-webkit-scrollbar, #second-movie-plot::-webkit-scrollbar {
+            /* This is the magic bit */
+            /*display: none;*/
+            background-color: black;
+            -ms-scrollbar-arrow-color: yellow;
+        }
+
         hr{
             border-width: 5px;
             color: #8b282b;
@@ -193,7 +200,7 @@
                 <div class="movie-body" >
                     <div class="movie-body-text" id="second-movie-body-text">
                         <div id="second-movie-title" ></div>
-                        <div id="second-movie-plot" style="max-height:30px;overflow:auto;"></div>
+                        <div id="second-movie-plot" ></div>
                     </div>
 
                     <div class = "change-button">
@@ -210,8 +217,8 @@
 
 
 <script>
-    var url = "http://localhost:8090/recommend/epgs/";
-//    var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
+//    var url = "http://localhost:8090/recommend/epgs/";
+    var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
     var user;
     var youTubeUrl;
     var nextPlay;
