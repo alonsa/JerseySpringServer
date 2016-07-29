@@ -1,11 +1,11 @@
 package com.alon.main.server.movieProvider;
 
-import com.alon.main.server.dbMigrtor.DbMigrator;
 import com.alon.main.server.http.HttpClient;
 import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -20,9 +20,10 @@ import static com.alon.main.server.Const.Consts.*;
 /**
  * Created by alon_ss on 6/29/16.
  */
-public class TmdbClient implements MovieProviderClient {
+@Service
+public class TmdbClientService implements MovieProviderClient {
 
-    private final static Logger logger = Logger.getLogger(TmdbClient.class);
+    private final static Logger logger = Logger.getLogger(TmdbClientService.class);
 
     @Override
     public CompletableFuture<Optional<String>> getFutureTrailer(String vodId) {
@@ -47,10 +48,10 @@ public class TmdbClient implements MovieProviderClient {
     }
 
     @Override
-    public CompletableFuture<Optional<String>> getFutureOverview(String vodId) {
+    public Optional<String> getFutureOverview(String vodId) throws ExecutionException, InterruptedException {
 
         if (vodId == null){
-            return new CompletableFuture<>();
+            return Optional.empty();
         }
 
         URI url = UriBuilder.
@@ -63,7 +64,7 @@ public class TmdbClient implements MovieProviderClient {
         return HttpClient.call(url.toString()).
                 thenApply(Response::getResponseBody).
                 thenApply(JSONObject::new).
-                thenApply(this::getOverviewFromeJson).exceptionally(ex -> Optional.empty());
+                thenApply(this::getOverviewFromeJson).exceptionally(ex -> Optional.empty()).get();
 
     }
 

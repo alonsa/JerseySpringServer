@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -20,12 +21,12 @@ import static com.alon.main.server.Const.Consts.*;
 /**
  * Created by alon_ss on 7/7/16.
  */
-public class YouTubeClient {
-
+@Service
+public class YouTubeClientService {
 
 //    https://www.googleapis.com/youtube/v3/videos?id=DhNMHcRSNdo&part=contentDetails&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
 
-    private final static Logger logger = Logger.getLogger(YouTubeClient.class);
+    private final static Logger logger = Logger.getLogger(YouTubeClientService.class);
 
     public Optional<Long> getVodLength(String vodId) {
 
@@ -48,7 +49,7 @@ public class YouTubeClient {
 
             durationOptional = data.
                     thenApply(this::getDuration).
-                    exceptionally(ex -> Optional.empty()).get();
+                    get();
 
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

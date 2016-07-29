@@ -3,11 +3,11 @@ package com.alon.main.server.movieProvider;
 import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
-import com.alon.main.server.rest.RestImpl;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -18,10 +18,13 @@ import static com.alon.main.server.Const.Consts.V_QUERY_PARAM;
 /**
  * Created by alon_ss on 6/29/16.
  */
-public class MovieProvider {
+@Service
+public class MovieProviderService {
 
-    private TmdbClient tmdbClient = new TmdbClient();
-    private final static Logger logger = Logger.getLogger(MovieProvider.class);
+    private final static Logger logger = Logger.getLogger(MovieProviderService.class);
+
+    @Autowired
+    private TmdbClientService tmdbClient;
 
     public CompletableFuture<Optional<String>> getYouTubeFutureTrailer(Movie movie){
 
@@ -29,6 +32,7 @@ public class MovieProvider {
 //                fromUri(BASE_URL).
 //                queryParam(V, KEY).
 //                build();
+
         Optional<String> optionalTmdbId = movie.getExternalIds().stream().
                 filter(external -> external.getSiteName().equals(MovieSite.TMDB)).map(ExternalId::getId).findFirst();
 

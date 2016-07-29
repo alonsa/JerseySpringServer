@@ -2,7 +2,7 @@ package com.alon.main.server.dbMigrtor;
 
 import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.entities.Movie;
-import com.alon.main.server.movieProvider.MovieProvider;
+import com.alon.main.server.movieProvider.MovieProviderService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,6 +23,9 @@ public final class DbMigrator {
     @Autowired
     public BaseDao<Movie> movieBaseDao;
 
+    @Autowired
+    MovieProviderService movieProviderService;
+
     @PostConstruct
     protected void init() {
 //        saveMovies(null);
@@ -36,7 +39,7 @@ public final class DbMigrator {
         Integer numToSkip = 4600;
         Iterator<Movie> moviesIter = movieBaseDao.getNoUrl(numToSkip);
 
-        MovieProvider movieProvider = new MovieProvider();
+
 
         int i = numToSkip;
         int updated = 0;
@@ -49,7 +52,7 @@ public final class DbMigrator {
                 logger.debug(i);
                 logger.debug(movie);
 
-                String trailer = movieProvider.getYouTubeTrailer(movie);
+                String trailer = movieProviderService.getYouTubeTrailer(movie);
 
                 if (trailer != null){
                     HashMap<String, Object> map = new HashMap<>();
