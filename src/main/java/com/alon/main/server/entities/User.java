@@ -61,7 +61,7 @@ public class User extends RecommandEntity implements Serializable{
     public void setCurrentlyWatch(CurrentlyWatch currentlyWatch) {
         if (currentlyWatch != null){
             this.currentlyWatch = currentlyWatch;
-            addToRecentlyWatch(currentlyWatch.getMovie().getId());
+            addToRecentlyWatch(currentlyWatch.getMovieId());
         }
     }
 

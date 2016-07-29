@@ -1,9 +1,6 @@
 package com.alon.main.server.rest;
 
-import com.alon.main.server.entities.CurrentlyWatch;
-import com.alon.main.server.entities.Movie;
-import com.alon.main.server.entities.Rating;
-import com.alon.main.server.entities.User;
+import com.alon.main.server.entities.*;
 import com.alon.main.server.service.*;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -145,7 +142,7 @@ public class RestImpl {
 
 		Optional<Movie> firstMovie = filteredMovie.stream().findFirst();
 
-		user.setCurrentlyWatch(firstMovie.map(CurrentlyWatch::new).orElse(null));
+		user.setCurrentlyWatch(firstMovie.map(BaseEntity::getId).map(CurrentlyWatch::new).orElse(null));
 
 		userService.save(user); // TODO: need to update by field
 		logger.debug("Update user: " +  user);

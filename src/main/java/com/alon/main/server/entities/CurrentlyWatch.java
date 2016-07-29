@@ -1,32 +1,30 @@
 package com.alon.main.server.entities;
 
-import org.mongodb.morphia.annotations.Embedded;
+import org.bson.types.ObjectId;
 
 /**
  * Created by alon_ss on 7/10/16.
  */
 public class CurrentlyWatch {
 
-    @Embedded
-    private Movie movie;
+    private ObjectId movieId;
     private Long startWatchTime;
-
 
     public CurrentlyWatch() {
     }
 
-    public CurrentlyWatch(Movie movie) {
-        this.movie = movie;
+    public CurrentlyWatch(ObjectId movieId) {
+        this.movieId = movieId;
 
         this.startWatchTime = System.currentTimeMillis();
     }
 
-    public Movie getMovie() {
-        return movie;
+    public ObjectId getMovieId() {
+        return movieId;
     }
 
-    public void setMovie(Movie movie) {
-        this.movie = movie;
+    public void setMovie(ObjectId movieId) {
+        this.movieId = movieId;
     }
 
     public Long getStartWatchTime() {
@@ -40,7 +38,7 @@ public class CurrentlyWatch {
     @Override
     public String toString() {
         return "CurrentlyWatch{" +
-                "movie=" + movie +
+                "movie=" + movieId +
                 ", startWatchTime=" + startWatchTime +
                 '}';
     }

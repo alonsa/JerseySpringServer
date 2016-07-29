@@ -3,12 +3,12 @@ package com.alon.main.server.entities;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import org.mongodb.morphia.annotations.Embedded;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Indexed;
+import java.util.Map;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import com.alon.main.server.Const.MovieSite;
+import org.mongodb.morphia.annotations.Entity;
 
 /**
  * Created by alon_ss on 6/28/16.
@@ -26,6 +26,8 @@ public class Movie extends RecommandEntity implements Serializable{
     private List<String> genres = new ArrayList<>();
 
     private List<ExternalId> externalIds = new ArrayList<>();
+
+    private Map<MovieSite, String> externalSiteToId = new HashMap<>();
 
     private Long length;
 
@@ -55,12 +57,21 @@ public class Movie extends RecommandEntity implements Serializable{
         this.plot = plot;
     }
 
+    @Deprecated
     public List<ExternalId> getExternalIds() {
         return externalIds;
     }
 
     public void setExternalIds(List<ExternalId> externalIds) {
         this.externalIds = externalIds;
+    }
+
+    public Map<MovieSite, String> getExternalSiteToId() {
+        return externalSiteToId;
+    }
+
+    public void setExternalSiteToId(Map<MovieSite, String> externalSiteToId) {
+        this.externalSiteToId = externalSiteToId;
     }
 
     public List<String> getGenres() {
