@@ -18,7 +18,7 @@ import static com.alon.main.server.Const.Consts.V_QUERY_PARAM;
 /**
  * Created by alon_ss on 6/29/16.
  */
-@Service
+//@Service
 public class MovieProviderService {
 
     private final static Logger logger = Logger.getLogger(MovieProviderService.class);

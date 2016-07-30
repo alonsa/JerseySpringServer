@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Created by alon_ss on 7/7/16.
  */
-public class YouTubeClientTest {
+public class YouTubeClientServiceTest {
 
     private YouTubeClientService testedClass = new YouTubeClientService();
 
@@ -98,8 +98,6 @@ public class YouTubeClientTest {
                 "  }\n" +
                 " ]\n" +
                 "}";
-
-        Long expectedResponse = 13 * 1000L;
 
         JSONObject responseJson = new JSONObject(josnString);
 

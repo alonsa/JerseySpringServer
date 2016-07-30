@@ -1,7 +1,6 @@
 package com.alon.main.server.entities;
 
 import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Indexed;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
@@ -23,7 +22,7 @@ public class Rating extends BaseEntity implements Serializable{
     private Long timestamp;
 
 
-    public Rating(){};
+    public Rating(){}
 
     public Rating(Integer userId, Integer movieId, Double rating) {
         this.userId = userId;

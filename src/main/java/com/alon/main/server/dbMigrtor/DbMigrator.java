@@ -130,7 +130,6 @@ public final class DbMigrator {
         //         take movies from xml file and save them in DB
         List<Movie> list = movieMemoryDaoImpl.getAll(num);
         movieBaseDao.saveAll(list);
-        list.toString();
     }
 
 }

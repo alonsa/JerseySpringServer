@@ -1,6 +1,5 @@
 package com.alon.main.server.http;
 
-import com.alon.main.server.dbMigrtor.DbMigrator;
 import org.apache.log4j.Logger;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;

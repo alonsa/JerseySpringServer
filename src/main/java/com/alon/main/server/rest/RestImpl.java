@@ -2,6 +2,7 @@ package com.alon.main.server.rest;
 
 import com.alon.main.server.entities.*;
 import com.alon.main.server.service.*;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import static com.alon.main.server.Const.Consts.RESPONSE_NUM;
 @Path("/recommend/")
 @Component
 public class RestImpl {
+
+
+
 
 //		http://localhost:8090/recommend/epg/9021
 //		http://localhost:8090/recommend/epgs/9021
@@ -53,6 +57,10 @@ public class RestImpl {
 		this.movieService = movieService;
 		this.ratingService = ratingService;
 		this.intooiTVMockService = intooiTVMockService;
+
+		logger.debug("##########################");
+		logger.debug("###   RestImpl is up!  ###");
+		logger.debug("##########################");
 	}
 
 	@GET

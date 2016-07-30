@@ -8,14 +8,14 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-import static com.alon.main.server.Const.Consts.COMMA;
-import static com.alon.main.server.Const.Consts.MOVIES_PATH;
-import static com.alon.main.server.Const.Consts.VERTICAL_BAR;
+import static com.alon.main.server.Const.Consts.*;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -71,8 +71,6 @@ public final class MovieMemoryDaoImpl {//implements BaseDao<Movie> {
 
         Integer imdbId = Integer.parseInt(tok[3]);
         externalIds.add(new ExternalId(MovieSite.IMDB, imdbId.toString()));
-
-        Optional<String> trailer = Optional.empty();
 
         if (tok.length >=5){
             Integer tmdbId = Integer.parseInt(tok[4]);

@@ -31,7 +31,7 @@ public class Movie extends RecommandEntity implements Serializable{
 
     private Long length;
 
-    public Movie(){};
+    public Movie(){}
 
     public Movie(Integer id, String title, List<String> genres, List<ExternalId> externalIds) {
 

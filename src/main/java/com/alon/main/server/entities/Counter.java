@@ -5,9 +5,6 @@ import org.mongodb.morphia.annotations.Indexed;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by alon_ss on 6/28/16.
@@ -22,7 +19,7 @@ public class Counter extends BaseEntity implements Serializable{
 
     private Integer value;
 
-    public Counter(){};
+    public Counter(){}
 
     public Counter(String entityType, Integer value) {
         this.entityName = entityType;

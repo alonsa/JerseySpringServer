@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
  */
 interface MovieProviderClient {
 
-    public CompletableFuture<Optional<String>> getFutureTrailer(String vodId);
-    public Optional<String> getFutureOverview(String vodId) throws ExecutionException, InterruptedException;
-    public Optional<String> getTrailer(String vodId);
+    CompletableFuture<Optional<String>> getFutureTrailer(String vodId);
+    Optional<String> getFutureOverview(String vodId) throws ExecutionException, InterruptedException;
+    Optional<String> getTrailer(String vodId);
 }

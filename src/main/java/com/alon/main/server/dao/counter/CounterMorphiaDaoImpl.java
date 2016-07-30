@@ -1,24 +1,19 @@
 package com.alon.main.server.dao.counter;
 
-import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.dao.MorphiaBaseDao;
-import com.alon.main.server.dao.movie.MovieMorphiaDaoImpl;
-import com.alon.main.server.dao.user.UserMorphiaDaoImpl;
 import com.alon.main.server.entities.Counter;
-import com.mongodb.operation.UpdateOperation;
-import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
-import org.mongodb.morphia.query.UpdateResults;
-import org.scalactic.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.alon.main.server.Const.Consts.*;
 
@@ -27,6 +22,11 @@ import static com.alon.main.server.Const.Consts.*;
  */
 @Service
 public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
+
+    @Autowired
+    public CounterMorphiaDaoImpl(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public Class<Counter> getTypeClass() {
@@ -38,8 +38,7 @@ public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
         return COUNTER_DB;
     }
 
-    @Autowired
-    ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
 
     private Map<String, MorphiaBaseDao> nameToDao = new HashMap<>();
 

@@ -1,23 +1,11 @@
 package com.alon.main.server.dao;
 
-import com.alon.main.server.entities.BaseEntity;
 import com.alon.main.server.entities.RecommandEntity;
-import com.mongodb.MongoClient;
-import org.bson.types.ObjectId;
-import org.mongodb.morphia.Datastore;
-import org.mongodb.morphia.Key;
-import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
-import org.mongodb.morphia.query.UpdateOperations;
-import org.mongodb.morphia.query.UpdateResults;
-import org.springframework.scheduling.annotation.Async;
 
-import javax.annotation.PostConstruct;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import static com.alon.main.server.Const.Consts.*;
+import static com.alon.main.server.Const.Consts.INNER_ID_FIELD;
 
 /**
  * Created by alon_ss on 6/29/16.
@@ -49,6 +37,7 @@ public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends Mor
         if (entity == null){
             return 0;
         }else{
+            //noinspection ConstantConditions
             return (Integer) entity;
         }
     }
