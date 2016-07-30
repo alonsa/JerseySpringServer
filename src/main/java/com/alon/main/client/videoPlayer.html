@@ -12,7 +12,6 @@
             margin: 0;
             padding: 0;
             background-color: black;
-
         }
 
         .content {
@@ -30,6 +29,14 @@
             height: 100%;
             margin: 0;
             border: 0;
+        }
+
+        .icon {
+            position: absolute;
+            width: 150px;
+            left: 25px;
+            top: 40px;
+            background-color: #2cb15a;
         }
 
         .btns-location {
@@ -157,11 +164,15 @@
 
 <body class="body">
 
+
 <div class="content">
     <div class="video-container">
         <iframe id="video-frame">
         </iframe>
     </div>
+
+    <img src="intooi.tv.png" class="icon" />
+
 
     <div class="btns-location">
         <div class="btns-container">
@@ -217,8 +228,8 @@
 
 
 <script>
-//    var url = "http://localhost:8090/recommend/epgs/";
-    var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
+    var url = "http://localhost:8090/recommend/epgs/";
+//    var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
     var user;
     var youTubeUrl;
     var nextPlay;
@@ -285,7 +296,8 @@
         localStorage.setItem("nextPlay", nextPlay);
         localStorage.setItem("user", user);
 
-        document.getElementById('video-frame').src = "https://" + youTubeUrl;
+//        document.getElementById('video-frame').src = "https://" + youTubeUrl;
+        document.getElementById('video-frame').src = youTubeUrl;
 
         function setTimer (sec) {
 
