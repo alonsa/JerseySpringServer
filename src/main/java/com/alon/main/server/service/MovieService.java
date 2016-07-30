@@ -1,12 +1,13 @@
 package com.alon.main.server.service;
 
-import com.alon.main.server.dao.BaseDao;
 import com.alon.main.server.dao.movie.MovieMorphiaDaoImpl;
 import com.alon.main.server.entities.Movie;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
@@ -15,6 +16,15 @@ import java.util.List;
 
 @Service
 public class MovieService {
+
+    private final static Logger logger = Logger.getLogger(MovieService.class);
+
+    @PostConstruct
+    private void init() {
+        logger.debug("###############################");
+        logger.debug("###   MovieService is up!   ###");
+        logger.debug("###############################");
+    }
 
     @Autowired
     public RecommenderService recommenderService;

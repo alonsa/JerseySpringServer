@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -27,6 +28,13 @@ public class YouTubeClientService {
 //    https://www.googleapis.com/youtube/v3/videos?id=DhNMHcRSNdo&part=contentDetails&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
 
     private final static Logger logger = Logger.getLogger(YouTubeClientService.class);
+
+    @PostConstruct
+    private void init() {
+        logger.debug("######################################");
+        logger.debug("###   YouTubeClientService is up!  ###");
+        logger.debug("######################################");
+    }
 
     public Optional<Long> getVodLength(String vodId) {
 

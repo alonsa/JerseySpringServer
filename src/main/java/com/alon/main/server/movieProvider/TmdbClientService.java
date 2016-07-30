@@ -2,11 +2,13 @@ package com.alon.main.server.movieProvider;
 
 import com.alon.main.server.http.HttpClient;
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkConf;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.ArrayList;
@@ -24,6 +26,13 @@ import static com.alon.main.server.Const.Consts.*;
 public class TmdbClientService implements MovieProviderClient {
 
     private final static Logger logger = Logger.getLogger(TmdbClientService.class);
+
+    @PostConstruct
+    private void init() {
+        logger.debug("###################################");
+        logger.debug("###   TmdbClientService is up!  ###");
+        logger.debug("###################################");
+    }
 
     @Override
     public CompletableFuture<Optional<String>> getFutureTrailer(String vodId) {

@@ -1,15 +1,13 @@
 package com.alon.main.server.service;
 
-import com.alon.main.server.dao.BaseDao;
-import com.alon.main.server.dao.RecommandDao;
 import com.alon.main.server.dao.counter.CounterMorphiaDaoImpl;
 import com.alon.main.server.dao.user.UserMorphiaDaoImpl;
-import com.alon.main.server.entities.CurrentlyWatch;
-import com.alon.main.server.entities.Movie;
-import com.alon.main.server.entities.Rating;
 import com.alon.main.server.entities.User;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -17,6 +15,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+
+    private final static Logger logger = Logger.getLogger(UserService.class);
+
+    @PostConstruct
+    private void init() {
+        logger.debug("##############################");
+        logger.debug("###   UserService is up!   ###");
+        logger.debug("##############################");
+    }
 
     @Autowired
     public UserMorphiaDaoImpl userDao;

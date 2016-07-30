@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,12 +39,13 @@ public class IntooiTVMockService {
     @Autowired
     private YouTubeClientService youTubeClient;
 
-    /*
-    Fill Url, plot, length and youtubeId
-    1. fill URL
-    2. fill YouTubeId
+    @PostConstruct
+    private void init() {
+        logger.debug("######################################");
+        logger.debug("###   IntooiTVMockService is up!   ###");
+        logger.debug("######################################");
+    }
 
-     */
     public Movie fillMovieData(Movie movie){
 
         Map<MovieSite, String> externalSiteToId = movie.getExternalSiteToId();
@@ -91,8 +93,6 @@ public class IntooiTVMockService {
             setDefaultData(movie);
             isRealData = false;
         }
-
-        String youTubeId = getYouTubeId(movie.getUri());
 
         if (movie.getPlot() == null){
             Optional<String> optionalTmdbId = Optional.ofNullable(movie.getExternalSiteToId().get(TMDB));

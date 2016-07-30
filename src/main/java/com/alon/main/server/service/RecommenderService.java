@@ -1,10 +1,10 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.util.Util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -34,8 +34,10 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.time.StopWatch;
 
-import static com.alon.main.server.Const.Consts.*;
+
+import static com.alon.main.server.Const.Consts.COMMA;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -84,26 +86,21 @@ public final class RecommenderService {
 
     private static Integer likePrefix = 99900000;
     private static Integer unLikePrefix = 66600000;
+    private static int mb = 1024*1024;
 
     @PostConstruct
     private void init() {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
         SparkConf sparkConf = new SparkConf().setAppName("JavaALS");
         String master = "local[" + threadNumber + "]";
         String executorMemory = executorMemorySize +"g";
         String driverMemory = driverMemorySize +"g";
 
-        logger.debug("#################################");
-        logger.debug("###   RecommenderService      ###");
-        logger.debug("###   " + master + "                ###");
-        logger.debug("### spark.executor.memory: " + executorMemorySize + "  ###");
-        logger.debug("### spark.driver.memory: " + driverMemorySize + "    ###");
-        logger.debug("#################################");
-
-        logger.debug("sparkConf: " + sparkConf.toDebugString());
         sparkConf.
                 setMaster(master).
                 set("spark.executor.memory", executorMemory);
-//                set("spark.driver.memory", driverMemory);
 
         if (StringUtils.isNumeric(driverMemorySize)){
             sparkConf.set("spark.driver.memory", driverMemory);
@@ -113,36 +110,30 @@ public final class RecommenderService {
             sparkConf.set("spark.testing", "true");
         }
 
-        //
-        int mb = 1024*1024;
-
-        //Getting the runtime reference from system
-        Runtime runtime = Runtime.getRuntime();
-
-
-        logger.debug("##### Heap utilization statistics [MB] #####");
-
-        //Print used memory
-        logger.debug("Used Memory:"
-                + (runtime.totalMemory() - runtime.freeMemory()) / mb);
-
-        //Print free memory
-        logger.debug("Free Memory:"
-                + runtime.freeMemory() / mb);
-
-        //Print total available memory
-        logger.debug("Total Memory:" + runtime.totalMemory() / mb);
-
-        //Print Maximum available memory
-        logger.debug("Max Memory:" + runtime.maxMemory() / mb);
-        //
-
         sc = new JavaSparkContext(sparkConf);
         setModel();
         loadRatingFromFile();
         setDefaultMovieList();
-//        setUserToNumberMap();
-//        updateUser(10);
+
+        //Getting the runtime reference from system
+        Runtime runtime = Runtime.getRuntime();
+        stopWatch.stop();
+        logger.debug("########################################");
+        logger.debug("###   RecommenderService             ###");
+        logger.debug("###   " + master + "                       ###");
+        logger.debug("### spark.executor.memory: " + executorMemorySize + "         ###");
+
+        if (StringUtils.isNumeric(driverMemorySize)){
+            logger.debug("### spark.driver.memory: " + driverMemorySize + "    ###");
+        }
+
+        logger.debug("### Heap utilization statistics [MB] ###");
+        logger.debug("### Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb+ "                  ###");
+        logger.debug("### Free Memory:" + runtime.freeMemory() / mb+ "                 ###");
+        logger.debug("### Total Memory:" + runtime.totalMemory() / mb+ "                ###");
+        logger.debug("### Max Memory:" + runtime.maxMemory() / mb+ "                  ###");
+        logger.debug("### Service up time : " + Util.millisecondDurationToDate(stopWatch.getTime()) + " ###");
+        logger.debug("#################################");
     }
 
     private void setDefaultMovieList() {
