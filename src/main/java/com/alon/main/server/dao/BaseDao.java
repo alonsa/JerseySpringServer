@@ -14,6 +14,7 @@ import java.util.Map;
 public interface BaseDao<T> {
 
     List<T> getByIds(List<ObjectId> list);
+    List<T> getOrderedByIds(List<ObjectId> list);
 
     Long count();
 
@@ -28,7 +29,6 @@ public interface BaseDao<T> {
     Iterator<T> getAll();
     List<T> getAllToList(Integer limit, Integer offset);
     List<T> getAllToList();
-
 
     UpdateResults updateByField(T entity, Map<String, Object> map);
 

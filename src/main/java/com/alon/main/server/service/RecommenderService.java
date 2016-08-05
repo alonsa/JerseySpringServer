@@ -2,6 +2,7 @@ package com.alon.main.server.service;
 
 import com.alon.main.server.util.Util;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,12 +31,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.time.StopWatch;
-
 
 import static com.alon.main.server.Const.Consts.COMMA;
 
@@ -44,12 +42,11 @@ import static com.alon.main.server.Const.Consts.COMMA;
  */
 
 @Service
-public final class RecommenderService {
+public class RecommenderService {
 
     private final static Logger logger = Logger.getLogger(RecommenderService.class);
 
-    @Autowired
-    RatingService ratingService;
+    private final RatingService ratingService;
 
     @Value("${spark.thread.num}")
     private String threadNumber;
@@ -82,11 +79,15 @@ public final class RecommenderService {
     private JavaRDD<Rating> fileRatings;
     private ModelContainer modelContainer = new ModelContainer();
     private List<Integer> defaultMovieList;
-    private Map<Integer, Integer> userToNumberMap;
 
-    private static Integer likePrefix = 99900000;
-    private static Integer unLikePrefix = 66600000;
-    private static int mb = 1024*1024;
+    private final static Integer LIKE_PREFIX = 99900000;
+    private final static Integer UNLIKE_PREFIX = 66600000;
+    private final static int MB = 1024*1024;
+
+    @Autowired
+    public RecommenderService(RatingService ratingService) {
+        this.ratingService = ratingService;
+    }
 
     @PostConstruct
     private void init() {
@@ -110,16 +111,11 @@ public final class RecommenderService {
             sparkConf.set("spark.testing", "true");
         }
 
-        sc = new JavaSparkContext(sparkConf);
-        setModel();
-        loadRatingFromFile();
-        setDefaultMovieList();
-
         //Getting the runtime reference from system
         Runtime runtime = Runtime.getRuntime();
-        stopWatch.stop();
+
         logger.debug("########################################");
-        logger.debug("###   RecommenderService             ###");
+        logger.debug("###   Starting RecommenderService    ###");
         logger.debug("###   " + master + "                       ###");
         logger.debug("### spark.executor.memory: " + executorMemorySize + "         ###");
 
@@ -128,10 +124,24 @@ public final class RecommenderService {
         }
 
         logger.debug("### Heap utilization statistics [MB] ###");
-        logger.debug("### Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb+ "                  ###");
-        logger.debug("### Free Memory:" + runtime.freeMemory() / mb+ "                 ###");
-        logger.debug("### Total Memory:" + runtime.totalMemory() / mb+ "                ###");
-        logger.debug("### Max Memory:" + runtime.maxMemory() / mb+ "                  ###");
+        logger.debug("### Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / MB + "                  ###");
+        logger.debug("### Free Memory:" + runtime.freeMemory() / MB + "                 ###");
+        logger.debug("### Total Memory:" + runtime.totalMemory() / MB + "                ###");
+        logger.debug("### Max Memory:" + runtime.maxMemory() / MB + "                  ###");
+        logger.debug("### Service up time : " + Util.millisecondDurationToDate(stopWatch.getTime()) + " ###");
+        logger.debug("#################################");
+
+        sc = new JavaSparkContext(sparkConf);
+        logger.debug("Set Model");
+        setModel();
+        logger.debug("Load Rating From File");
+        loadRatingFromFile();
+        logger.debug("Set Default Movie List");
+        setDefaultMovieList();
+
+        stopWatch.stop();
+        logger.debug("########################################");
+        logger.debug("###   RecommenderService             ###");
         logger.debug("### Service up time : " + Util.millisecondDurationToDate(stopWatch.getTime()) + " ###");
         logger.debug("#################################");
     }
@@ -151,17 +161,6 @@ public final class RecommenderService {
             defaultMovieList = sumToRating.sortByKey().values().map(Rating::product).collect();
         }
     }
-//
-//    private void setUserToNumberMap() {
-//
-//        JavaRDD<Rating> ratings = loadRatings(true);
-//
-//        JavaPairRDD<Integer, Integer> pairs = JavaPairRDD.fromJavaRDD(ratings.map(rating -> new Tuple2<>(rating.user(), 1)));
-//        JavaPairRDD<Integer, Integer> userToSum = pairs.reduceByKey((a, b) -> a + b);
-//
-//        userToNumberMap = userToSum.collectAsMap();
-//
-//    }
 
     @Deprecated  // need to delete this - only use for in memory movieBaseDao.
     public JavaSparkContext getJavaSparkContext(){
@@ -194,38 +193,41 @@ public final class RecommenderService {
         return ratingsList.stream().map(Rating::product).collect(Collectors.toList());
     }
 
-    public  void updateModel(Rating newRating) {
+    @Async
+    public void updateModel(List<Rating> newRatings) {
 
-        logger.debug("Update model for rating: " + newRating);
+        logger.debug("Update model for rating: " + newRatings);
 
-        int product = newRating.product();
-        int user = newRating.user();
+        if (newRatings.isEmpty()){
+            int user = newRatings.get(0).user();
+            List<Integer> ratingUserNums = newRatings.stream().
+                    map(r -> new Tuple2<>(r.product(), r.rating() > 3 ? LIKE_PREFIX : UNLIKE_PREFIX)).
+                    map(t -> t._1() + t._2()).
+                    collect(Collectors.toList());
 
-        MatrixFactorizationModel model = modelContainer.getReadModel();
-        RDD<Tuple2<Object, double[]>> scalaUserFeatures = model.userFeatures();
-        modelContainer.returnReadModel();
+            MatrixFactorizationModel model = modelContainer.getReadModel();
+            RDD<Tuple2<Object, double[]>> scalaUserFeatures = model.userFeatures();
+            modelContainer.returnReadModel();
 
-        JavaRDD<Tuple2<Object, double[]>> userFeatures = scalaUserFeatures.toJavaRDD();
+            JavaRDD<Tuple2<Object, double[]>> userFeatures = scalaUserFeatures.toJavaRDD();
+            List<double[]> userVector = JavaPairRDD.fromJavaRDD(userFeatures).lookup(user);
 
-        Integer prefix = newRating.rating() > 3 ? likePrefix : unLikePrefix;
+            List<double[]> newUserVector = new ArrayList<>();
+            newUserVector.addAll(userVector);
 
-        int ratingUserNum = prefix + product ;
+            for (Integer ratingUserNum: ratingUserNums) {
+                List<double[]> ratingUser = JavaPairRDD.fromJavaRDD(userFeatures).lookup(ratingUserNum);
+                newUserVector = addVectors(newUserVector, ratingUser, null);
+            }
 
-        List<double[]> userVector = JavaPairRDD.fromJavaRDD(userFeatures).lookup(user);
-        List<double[]> ratingUser = JavaPairRDD.fromJavaRDD(userFeatures).lookup(ratingUserNum);
-        List<double[]> newUserVector = addVectors(userVector, ratingUser, null);
+            List<Tuple2<Object, double[]>> newUserList = new ArrayList<>();
+            newUserList.add(new Tuple2<>(user, newUserVector.get(0)));
+            JavaRDD<Tuple2<Object, double[]>> newUserRdd = sc.parallelize(newUserList);
+            JavaRDD<Tuple2<Object, double[]>> combinedRdd = userFeatures.filter(x -> !x._1().equals(user)).union(newUserRdd);
 
-        List<Tuple2<Object, double[]>> newUserList = new ArrayList<>();
-        newUserList.add(new Tuple2<>(user, newUserVector.get(0)));
-
-        JavaRDD<Tuple2<Object, double[]>> newUserRdd = sc.parallelize(newUserList);
-
-        JavaRDD<Tuple2<Object, double[]>> combinedRdd = userFeatures.filter(x -> !x._1().equals(user)).union(newUserRdd);
-
-        MatrixFactorizationModel newModel = new MatrixFactorizationModel(model.rank(), combinedRdd.rdd(), model.productFeatures());
-
-        modelContainer.setModel(newModel, false);
-
+            MatrixFactorizationModel newModel = new MatrixFactorizationModel(model.rank(), combinedRdd.rdd(), model.productFeatures());
+            modelContainer.setModel(newModel, false);
+        }
     }
 
     private List<double[]> addVectors(List<double[]> originVector, List<double[]> newVector, Integer num) {
@@ -274,32 +276,6 @@ public final class RecommenderService {
         }
     }
 
-    @Async
-    public void setModelAsync() {
-
-        Runnable runnable = () -> {
-            try {
-                Configuration conf = new Configuration();
-                Path path = new Path(MODEL_TEMP_PATH);
-                try {
-                    FileSystem.get(conf).delete(path, true);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-
-                MatrixFactorizationModel model = createModel(false);
-                modelContainer.setModel(model, true);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        };
-
-        Thread thread = new Thread(runnable);
-        thread.start();
-
-    }
-
     private MatrixFactorizationModel createModel(Boolean loadFromFiles) {
 
         int rank = 10;
@@ -340,33 +316,11 @@ public final class RecommenderService {
         return new Rating(rating.getUserId(), rating.getMovieId(), rating.getRating());
     }
 
-
-    private double testModel(JavaRDD<Rating> ratings, MatrixFactorizationModel model) {
-
-        JavaRDD<Tuple2<Object, Object>> userProducts = ratings.map(r -> new Tuple2<Object, Object>(r.user(), r.product()));
-
-        // Evaluate the model on rating data
-        JavaRDD<Tuple2<Tuple2<Integer, Integer>, Double>> predictionsNorPair = model
-                .predict(JavaRDD.toRDD(userProducts))
-                .toJavaRDD()
-                .map(r -> new Tuple2<>(new Tuple2<>(r.user(), r.product()), r.rating()));
-
-        JavaPairRDD<Tuple2<Integer, Integer>, Double> predictions = JavaPairRDD.fromJavaRDD(predictionsNorPair);
-
-        JavaRDD<Tuple2<Double, Double>> ratesAndPreds = JavaPairRDD
-                .fromJavaRDD(ratings.map(r -> new Tuple2<>(new Tuple2<>(r.user(), r.product()), r.rating())))
-                .join(predictions)
-                .values();
-
-        return ratesAndPreds.mapToDouble(pair -> (pair._1() - pair._2()) * (pair._1() - pair._2())).mean();
-    }
-
-
     private static class ParseUnLikeRatingFromProduct implements Function<Integer, Rating> {
 
         @Override
         public Rating call(Integer product) {
-            return new Rating(unLikePrefix + product, product, 0);
+            return new Rating(UNLIKE_PREFIX + product, product, 0);
         }
     }
 
@@ -374,7 +328,7 @@ public final class RecommenderService {
 
         @Override
         public Rating call(Integer product) {
-            return new Rating(likePrefix + product, product, 5);
+            return new Rating(LIKE_PREFIX + product, product, 5);
         }
     }
 
@@ -447,20 +401,33 @@ public final class RecommenderService {
         }
 
         MatrixFactorizationModel getReadModel(){
+            logger.debug("TRY TO ACQUIRE READ LOCK");
             lock.readLock().lock();
+            logger.debug("ACQUIRE READ LOCK SUCCESS!!!");
+
             return model;
         }
 
         void returnReadModel(){
+            logger.debug("TRY TO RELEASE READ LOCK");
             lock.readLock().unlock();
+            logger.debug("RELEASE READ LOCK SUCCESS!!!");
+
         }
 
         private void WriteLockModel(){
+            logger.debug("TRY TO ACQUIRE WRITE LOCK");
+
             lock.writeLock().lock();
+            logger.debug("WRITE LOCK SUCCESS!!!");
+
         }
 
         private void returnWriteModel(){
+            logger.debug("TRY TO RELEASE WRITE LOCK");
             lock.writeLock().unlock();
+            logger.debug("RELEASE WRITE LOCK SUCCESS!!!");
+
         }
     }
 

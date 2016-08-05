@@ -14,6 +14,7 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -41,34 +42,10 @@ public class RatingService {
         return ratingDao.getAllToList();
     }
 
-
-    public void addRating(User user) {
-        CurrentlyWatch currentlyWatch = user.getCurrentlyWatch();
-        if (currentlyWatch != null && currentlyWatch.getMovieId() != null){
-            ObjectId movieId = currentlyWatch.getMovieId();
-            Movie movie = movieService.getById(movieId);
-            if (movie != null && movie.getLength() != null && movie.getInnerId() != null){
-                Instant startWatchTime = Instant.ofEpochMilli(currentlyWatch.getStartWatchTime());
-                Duration watchedDuration = Duration.between(startWatchTime, Instant.now()); // duration of watched vod
-
-                double watchingPersentage = (watchedDuration.toMillis() / movie.getLength().doubleValue()) * 5;
-                double normalRating = ((watchingPersentage > 5) ? 5.0 : watchingPersentage);
-
-                Rating rating = new Rating(user.getInnerId(), movie.getInnerId(), normalRating);
-                ratingDao.save(rating);
-            }
-        }
+    public void addRatings(List<Rating> newRatings) {
+        List<Rating> checkedRatings = newRatings.stream().filter(Rating::isValid).collect(Collectors.toList());
+        List<Rating> notValidRatings = newRatings.stream().filter(x-> !x.isValid()).collect(Collectors.toList());
+        logger.warn("There are some non valid rating that send to DB: " + notValidRatings);
+        ratingDao.saveAll(checkedRatings);
     }
-
-    public Rating addRating(Integer user, Integer movie, Boolean like) {
-
-        Double normalRating = like ? 5.0 : 0.0;
-        Rating rating = new Rating(user, movie, normalRating);
-        ratingDao.save(rating);
-
-        return rating;
-
-    }
-
-
 }

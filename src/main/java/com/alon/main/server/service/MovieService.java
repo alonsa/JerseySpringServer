@@ -27,17 +27,18 @@ public class MovieService {
     }
 
     @Autowired
-    public RecommenderService recommenderService;
-
-    @Autowired
     public MovieMorphiaDaoImpl movieBaseDao;
 
     public List<Movie> getByInnerIds(List<Integer> moviesInnerIds) {
-        return movieBaseDao.getByInnerIds(moviesInnerIds);
+        return movieBaseDao.getOrderedByInnerIds(moviesInnerIds);
     }
 
     public void saveMovie(Movie movie){
         movieBaseDao.save(movie);
+    }
+
+    public List<Movie> getByIds(List<ObjectId> moviesInnerIds) {
+        return movieBaseDao.getOrderedByIds(moviesInnerIds);
     }
 
     public Movie getById(ObjectId movieId) {

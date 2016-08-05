@@ -42,6 +42,39 @@
           <element id="library" level="project" name="Maven: org.glassfish.hk2:spring-bridge:2.4.0-b10" />
           <element id="library" level="project" name="Maven: log4j:log4j:1.2.17" />
           <element id="library" level="project" name="Maven: org.apache.spark:spark-mllib_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-streaming_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-sql_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: com.univocity:univocity-parsers:2.1.0" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-sketch_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-catalyst_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.codehaus.janino:janino:2.7.8" />
+          <element id="library" level="project" name="Maven: org.codehaus.janino:commons-compiler:2.7.8" />
+          <element id="library" level="project" name="Maven: org.antlr:antlr4-runtime:4.5.2-1" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-column:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-common:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-encoding:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-generator:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-hadoop:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-format:2.3.0-incubating" />
+          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-jackson:1.7.0" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-graphx_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: com.github.fommil.netlib:core:1.1.2" />
+          <element id="library" level="project" name="Maven: net.sourceforge.f2j:arpack_combined_all:0.1" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-mllib-local_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.scalanlp:breeze_2.11:0.11.2" />
+          <element id="library" level="project" name="Maven: org.scalanlp:breeze-macros_2.11:0.11.2" />
+          <element id="library" level="project" name="Maven: net.sf.opencsv:opencsv:2.3" />
+          <element id="library" level="project" name="Maven: com.github.rwl:jtransforms:2.4.0" />
+          <element id="library" level="project" name="Maven: org.spire-math:spire_2.11:0.7.4" />
+          <element id="library" level="project" name="Maven: org.spire-math:spire-macros_2.11:0.7.4" />
+          <element id="library" level="project" name="Maven: org.apache.commons:commons-math3:3.4.1" />
+          <element id="library" level="project" name="Maven: org.jpmml:pmml-model:1.2.7" />
+          <element id="library" level="project" name="Maven: org.jpmml:pmml-agent:1.2.7" />
+          <element id="library" level="project" name="Maven: org.jpmml:pmml-schema:1.2.7" />
+          <element id="library" level="project" name="Maven: org.apache.spark:spark-tags_2.11:2.0.0-preview" />
+          <element id="library" level="project" name="Maven: org.scalatest:scalatest_2.11:2.2.6" />
+          <element id="library" level="project" name="Maven: org.scala-lang.modules:scala-xml_2.11:1.0.2" />
+          <element id="library" level="project" name="Maven: org.spark-project.spark:unused:1.0.0" />
           <element id="library" level="project" name="Maven: org.apache.spark:spark-core_2.11:2.0.0-preview" />
           <element id="library" level="project" name="Maven: org.apache.avro:avro-mapred:hadoop2:1.7.7" />
           <element id="library" level="project" name="Maven: org.apache.avro:avro-ipc:1.7.7" />
@@ -104,7 +137,6 @@
           <element id="library" level="project" name="Maven: com.google.code.findbugs:jsr305:1.3.9" />
           <element id="library" level="project" name="Maven: org.slf4j:jul-to-slf4j:1.7.16" />
           <element id="library" level="project" name="Maven: org.slf4j:jcl-over-slf4j:1.7.16" />
-          <element id="library" level="project" name="Maven: org.slf4j:slf4j-log4j12:1.7.16" />
           <element id="library" level="project" name="Maven: com.ning:compress-lzf:1.0.3" />
           <element id="library" level="project" name="Maven: org.xerial.snappy:snappy-java:1.1.2.4" />
           <element id="library" level="project" name="Maven: net.jpountz.lz4:lz4:1.3.0" />
@@ -133,39 +165,6 @@
           <element id="library" level="project" name="Maven: oro:oro:2.0.8" />
           <element id="library" level="project" name="Maven: net.razorvine:pyrolite:4.9" />
           <element id="library" level="project" name="Maven: net.sf.py4j:py4j:0.10.1" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-streaming_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-sql_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: com.univocity:univocity-parsers:2.1.0" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-sketch_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-catalyst_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: org.codehaus.janino:janino:2.7.8" />
-          <element id="library" level="project" name="Maven: org.codehaus.janino:commons-compiler:2.7.8" />
-          <element id="library" level="project" name="Maven: org.antlr:antlr4-runtime:4.5.2-1" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-column:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-common:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-encoding:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-generator:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-hadoop:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-format:2.3.0-incubating" />
-          <element id="library" level="project" name="Maven: org.apache.parquet:parquet-jackson:1.7.0" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-graphx_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: com.github.fommil.netlib:core:1.1.2" />
-          <element id="library" level="project" name="Maven: net.sourceforge.f2j:arpack_combined_all:0.1" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-mllib-local_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: org.scalanlp:breeze_2.11:0.11.2" />
-          <element id="library" level="project" name="Maven: org.scalanlp:breeze-macros_2.11:0.11.2" />
-          <element id="library" level="project" name="Maven: net.sf.opencsv:opencsv:2.3" />
-          <element id="library" level="project" name="Maven: com.github.rwl:jtransforms:2.4.0" />
-          <element id="library" level="project" name="Maven: org.spire-math:spire_2.11:0.7.4" />
-          <element id="library" level="project" name="Maven: org.spire-math:spire-macros_2.11:0.7.4" />
-          <element id="library" level="project" name="Maven: org.apache.commons:commons-math3:3.4.1" />
-          <element id="library" level="project" name="Maven: org.jpmml:pmml-model:1.2.7" />
-          <element id="library" level="project" name="Maven: org.jpmml:pmml-agent:1.2.7" />
-          <element id="library" level="project" name="Maven: org.jpmml:pmml-schema:1.2.7" />
-          <element id="library" level="project" name="Maven: org.apache.spark:spark-tags_2.11:2.0.0-preview" />
-          <element id="library" level="project" name="Maven: org.scalatest:scalatest_2.11:2.2.6" />
-          <element id="library" level="project" name="Maven: org.scala-lang.modules:scala-xml_2.11:1.0.2" />
-          <element id="library" level="project" name="Maven: org.spark-project.spark:unused:1.0.0" />
           <element id="library" level="project" name="Maven: org.apache.commons:commons-io:1.3.2" />
           <element id="library" level="project" name="Maven: org.json:json:20160212" />
           <element id="library" level="project" name="Maven: org.asynchttpclient:async-http-client:2.0.7" />
@@ -182,7 +181,6 @@
           <element id="library" level="project" name="Maven: org.reactivestreams:reactive-streams:1.0.0" />
           <element id="library" level="project" name="Maven: com.typesafe.netty:netty-reactive-streams:1.0.6" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.20.0-GA" />
-          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.21" />
           <element id="library" level="project" name="Maven: org.mongodb:mongo-java-driver:3.2.2" />
           <element id="library" level="project" name="Maven: org.mongodb.morphia:morphia:1.2.0" />
           <element id="library" level="project" name="Maven: cglib:cglib-nodep:2.2.2" />
@@ -195,6 +193,13 @@
           <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.5.3" />
           <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.5.3" />
           <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.5.3" />
+          <element id="library" level="project" name="Maven: org.testng:testng:6.9.10" />
+          <element id="library" level="project" name="Maven: com.beust:jcommander:1.48" />
+          <element id="library" level="project" name="Maven: org.beanshell:bsh:2.0b4" />
+          <element id="library" level="project" name="Maven: org.mockito:mockito-all:1.9.5" />
+          <element id="library" level="project" name="Maven: org.springframework:spring-test:4.3.0.RELEASE" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.21" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-log4j12:1.7.21" />
         </element>
       </element>
       <element id="directory" name="META-INF">

@@ -10,11 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.alon.main.server.Const.Consts.RESPONSE_NUM;
@@ -23,39 +20,24 @@ import static com.alon.main.server.Const.Consts.RESPONSE_NUM;
 @Component
 public class RestImpl {
 
-
-
-
 //		http://localhost:8090/recommend/epg/9021
 //		http://localhost:8090/recommend/epgs/9021
 
 	private final static Logger logger = Logger.getLogger(RestImpl.class);
 
-	private final RecommenderService recommenderService;
-
-	private final UserService userService;
-
-	private final RatingService ratingService;
-
-	private final MovieService movieService;
-
+	private final RestApiService restApiService;
 	private final IntooiTVMockService intooiTVMockService;
 
-	@DefaultValue(RESPONSE_NUM) @QueryParam("num") Integer recommandNum;
+	private static StopWatch stopWatch = new StopWatch();
+
+	@DefaultValue(RESPONSE_NUM) @QueryParam("num") Integer askedMovieNum;
 	@QueryParam("play") String play;
-	@DefaultValue("true") @QueryParam("like") boolean like;
+	@DefaultValue("true") @QueryParam("like") boolean likeCurrentlyPlay;
 
 	@Autowired
-	public RestImpl(RecommenderService recommenderService,
-					UserService userService,
-					MovieService movieService,
-					RatingService ratingService,
-					IntooiTVMockService intooiTVMockService) {
+	public RestImpl(RestApiService restApiService, IntooiTVMockService intooiTVMockService) {
 
-		this.recommenderService = recommenderService;
-		this.userService = userService;
-		this.movieService = movieService;
-		this.ratingService = ratingService;
+		this.restApiService = restApiService;
 		this.intooiTVMockService = intooiTVMockService;
 
 		logger.debug("##########################");
@@ -67,7 +49,7 @@ public class RestImpl {
 	@Path("epgs/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public List<Epg> recommands(@PathParam("id") String userName) {
-		logger.debug("Get Request to /epgs/"+ userName + "?play=" + play + "&like=" + like + "&num=" + recommandNum);
+		logger.debug("Get Request to /epgs/"+ userName + "?play=" + play + "&like=" + likeCurrentlyPlay + "&askedMovieNum=" + askedMovieNum);
 
 		return getEpgRecommendationForUser(userName);
 	}
@@ -82,82 +64,64 @@ public class RestImpl {
 	}
 
 	private List<Epg> getEpgRecommendationForUser(String userName) {
-
-		// Get or create user
-		logger.debug("Look for user: " + userName);
-		User user = userService.getUserByName(userName);
-		logger.debug("Found user:" + user);
-
-		Optional<Movie> optionalPlayMovie = Optional.empty();
-		if (play != null && ObjectId.isValid(play)){
-			Movie movie = movieService.getById(new ObjectId(play));
-			optionalPlayMovie = Optional.ofNullable(movie);
+		if (logger.isDebugEnabled()){
+			stopWatch.reset();
+			stopWatch.start();
 		}
 
-		logger.debug("Playing movie:" + optionalPlayMovie);
+		Optional<ObjectId> currentlyPlayOption = Optional.ofNullable(play).filter(ObjectId::isValid).map(ObjectId::new);
 
-		// Add rating by the time the user watched the asset
-		logger.debug("Add rating by the time the user watched the asset");
-		ratingService.addRating(user);
+		User user = restApiService.getUser(userName);
+		Optional<ObjectId> currentlyWatchOption = Optional.ofNullable(user.getCurrentlyWatch()).map(CurrentlyWatch::getMovieId);
 
-		// Add rating by the user action (want to play or unlike the asset)
-		logger.debug("Add rating by the user action (want to play or unlike the asset)");
-		optionalPlayMovie.ifPresent(movie -> {
-			Rating rating = ratingService.addRating(user.getInnerId(), movie.getInnerId(), like);
-			org.apache.spark.mllib.recommendation.Rating recommendationRating =
-					new org.apache.spark.mllib.recommendation.Rating(rating.getUserId(), rating.getMovieId(), rating.getRating());
-			recommenderService.updateModel(recommendationRating);
-		});
+		List<Movie> movies = restApiService.getEpgRecommendationForUser(user, currentlyPlayOption, likeCurrentlyPlay, askedMovieNum);
 
-		// Calculate number of asked recommendations
-		Integer recommendationNumber = user.getRecentlyWatch().size() + recommandNum;
-		logger.debug("Number of asked recommendations: " +  recommendationNumber);
+		// TODO change to @async
+		BackgroundJob backgroundJob = new BackgroundJob(user, currentlyWatchOption, currentlyPlayOption);
+		Thread thread = new Thread(backgroundJob);
+		thread.start();
 
-
-		// Get recommended vods Ids
-		List<Integer> recommendedMoviesInnerIds = recommenderService.recommend(user.getInnerId(), recommendationNumber);
-		logger.debug("Recommended vods Ids: " +  recommendedMoviesInnerIds);
-
-		// Get the movies by the Ids
-		List<Movie> dbMovies = movieService.getByInnerIds(recommendedMoviesInnerIds);
-
-		// Create a Map of ides to movies
-		Map<Integer, Movie> innerIdToMovie = dbMovies.stream().collect(Collectors.toMap(Movie::getInnerId, Function.identity()));
-
-		// Map the movie ids to movies - while keep the order
-		List<Movie> recommendedMovies = recommendedMoviesInnerIds.stream().map(innerIdToMovie::get).collect(Collectors.toList());
-
-		HashSet<ObjectId> userRecentlyWatch = new HashSet<>(user.getRecentlyWatch());
-
-		// Filter out the movies from the user recently watch list
-		List<Movie> filteredMovie = recommendedMovies.stream().
-				filter(movie -> !userRecentlyWatch.contains(movie.getId())).
-				limit(recommandNum).
-				collect(Collectors.toList());
-
-		// Add next play movie to the head of returned movies
-		optionalPlayMovie.ifPresent(filteredMovie::remove);
-		if (like){
-			optionalPlayMovie.ifPresent(movie -> filteredMovie.add(0, movie));
-		}
-
-		// Convert movies to Epg
-		List<Epg> epgs = filteredMovie.stream().
-				limit(recommandNum).
-				map(intooiTVMockService::fillMovieData).
-				map(Epg::new).
-				collect(Collectors.toList());
-
-		Optional<Movie> firstMovie = filteredMovie.stream().findFirst();
-
-		user.setCurrentlyWatch(firstMovie.map(BaseEntity::getId).map(CurrentlyWatch::new).orElse(null));
-
-		userService.save(user); // TODO: need to update by field
-		logger.debug("Update user: " +  user);
+		List<Epg> epgs = movies.stream().map(intooiTVMockService::fillMovieData).map(Epg::new).collect(Collectors.toList());
 
 		logger.debug("Response: " + epgs);
 
+		if (logger.isDebugEnabled()){
+			stopWatch.stop();
+			logger.debug("Response time: " + stopWatch.getTime() + " miilis");
+		}
+
 		return epgs;
+	}
+
+	private class BackgroundJob implements Runnable{
+		private Optional<ObjectId> currentlyPlayOption;
+		private User user;
+		private Optional<ObjectId> currentlyWatchOption;
+
+		BackgroundJob(User user, Optional<ObjectId> currentlyWatchOption, Optional<ObjectId> currentlyPlayOption){
+			this.currentlyPlayOption = currentlyPlayOption;
+			this.user = user;
+			this.currentlyWatchOption = currentlyWatchOption;
+		}
+
+		@Override
+		public void run() {
+			StopWatch stopWatch = null;
+			if (logger.isDebugEnabled()){
+				stopWatch = new StopWatch();
+				stopWatch.reset();
+				stopWatch.start();
+			}
+			logger.debug("Start BackgroundJob");
+
+			restApiService.doBackgroundJob(user, currentlyWatchOption, currentlyPlayOption, likeCurrentlyPlay);
+			if (logger.isDebugEnabled() && stopWatch != null){
+				stopWatch.stop();
+				logger.debug("BackgroundJob run time: " + stopWatch.getTime() + " miilis");
+			}
+			logger.debug("End BackgroundJob");
+
+		}
 	}
 
 }

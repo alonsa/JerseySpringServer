@@ -4,6 +4,9 @@ import com.alon.main.server.entities.RecommandEntity;
 import org.mongodb.morphia.query.Query;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.alon.main.server.Const.Consts.INNER_ID_FIELD;
 
@@ -20,6 +23,13 @@ public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends Mor
         Query<T> query = getQuery();
         query.field(INNER_ID_FIELD).in(list);
         return query.asList();
+    }
+
+    @Override
+    public List<T> getOrderedByInnerIds(List<Integer> list) {
+        List<T> entities = getByInnerIds(list);
+        Map<Integer, T> idToEntity = entities.stream().collect(Collectors.toMap(T::getInnerId, Function.identity()));
+        return list.stream().map(idToEntity::get).collect(Collectors.toList());
     }
 
     @Override

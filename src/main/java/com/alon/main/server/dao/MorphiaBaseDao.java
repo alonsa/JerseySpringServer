@@ -16,6 +16,8 @@ import javax.annotation.PostConstruct;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.alon.main.server.Const.Consts.*;
 
@@ -66,7 +68,16 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
     @Override
     public List<T> getByIds(List<ObjectId> list) {
         Query<T> query = getQuery();
+        query.field(ID_FIELD).in(list);
+
         return query.asList();
+    }
+
+    @Override
+    public List<T> getOrderedByIds(List<ObjectId> list) {
+        List<T> entities = getByIds(list);
+        Map<ObjectId, T> idToEntity = entities.stream().collect(Collectors.toMap(T::getId, Function.identity()));
+        return list.stream().map(idToEntity::get).collect(Collectors.toList());
     }
 
     @Override

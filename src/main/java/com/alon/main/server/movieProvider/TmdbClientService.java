@@ -2,7 +2,6 @@ package com.alon.main.server.movieProvider;
 
 import com.alon.main.server.http.HttpClient;
 import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -8,6 +8,8 @@ import java.util.List;
 public interface RecommandDao<T> {
 
     List<T> getByInnerIds(List<Integer> list);
+    List<T> getOrderedByInnerIds(List<Integer> list);
+
     T getByInnerId(Integer id);
     Integer getMaxInnerId();
 
