@@ -35,7 +35,6 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
 
     private Class<T> typeParameterClass = getTypeClass();
 
-    public abstract Class<T> getTypeClass();
     protected abstract String getDbName();
 
     @PostConstruct

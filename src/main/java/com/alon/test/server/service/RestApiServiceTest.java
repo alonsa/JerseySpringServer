@@ -30,10 +30,10 @@ import static org.mockito.Mockito.when;
 public class RestApiServiceTest {
 
     @InjectMocks
-    private RestApiService testingObject;
+    private RestApiServiceImpl testingObject;
 
     @Mock
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Mock
     private RecommenderService recommenderService;

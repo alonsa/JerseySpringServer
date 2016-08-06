@@ -21,7 +21,7 @@ import static com.alon.main.server.Const.Consts.*;
  * Created by alon_ss on 6/26/16.
  */
 //@Service
-public final class MovieMemoryDaoImpl {//implements BaseDao<Movie> {
+public class MovieMemoryDaoImpl {//implements BaseDao<Movie> {
 
     @Autowired
 	public RecommenderService recommenderService;

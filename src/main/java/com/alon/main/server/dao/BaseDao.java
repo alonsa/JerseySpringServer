@@ -13,6 +13,8 @@ import java.util.Map;
  */
 public interface BaseDao<T> {
 
+    Class<T> getTypeClass();
+
     List<T> getByIds(List<ObjectId> list);
     List<T> getOrderedByIds(List<ObjectId> list);
 

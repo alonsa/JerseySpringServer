@@ -1,16 +1,15 @@
 package com.alon.main.server.dao.counter;
 
 import com.alon.main.server.dao.MorphiaBaseDao;
+import com.alon.main.server.dao.RecommandDao;
+import com.alon.main.server.dao.user.UserDao;
 import com.alon.main.server.entities.Counter;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,11 +20,13 @@ import static com.alon.main.server.Const.Consts.*;
  * Created by alon_ss on 6/26/16.
  */
 @Service
-public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
+public class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> implements CounterDao {
+
+    private UserDao userDao;
 
     @Autowired
-    public CounterMorphiaDaoImpl(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+    public CounterMorphiaDaoImpl(UserDao userDao) {
+        this.userDao = userDao;
     }
 
     @Override
@@ -38,22 +39,12 @@ public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
         return COUNTER_DB;
     }
 
-    private final ApplicationContext applicationContext;
-
-    private Map<String, MorphiaBaseDao> nameToDao = new HashMap<>();
+    private Map<String, RecommandDao> nameToDao = new HashMap<>();
 
     @PostConstruct
-    @Async
     protected void init() {
         super.init();
-
-        applicationContext.getBeansOfType(MorphiaBaseDao.class).values();
-
-        Collection<MorphiaBaseDao> daos = applicationContext.getBeansOfType(MorphiaBaseDao.class).values();
-
-        for (MorphiaBaseDao dao: daos){
-            initCounter(dao);
-        }
+        initCounter(userDao);
     }
 
     public Integer increase(String entityName){
@@ -62,16 +53,15 @@ public final class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> {
             Counter counter = datastore.findAndModify(findQuery, updateOperation);
 
             return counter.getValue();
-
     }
 
-    private void initCounter(MorphiaBaseDao counterEntityDao) {
+    private void initCounter(RecommandDao counterEntityDao) {
         String entityName = counterEntityDao.getTypeClass().getSimpleName();
         Counter counter = getByName(entityName);
         addIfMissing(counterEntityDao, entityName, counter);
     }
 
-    private Counter addIfMissing(MorphiaBaseDao counterEntityDao, String entityName, Counter counter) {
+    private Counter addIfMissing(RecommandDao counterEntityDao, String entityName, Counter counter) {
         if (counter == null){
             Long number = Optional.of(counterEntityDao.count()).orElse(0L);
             counter = new Counter(entityName, number.intValue());

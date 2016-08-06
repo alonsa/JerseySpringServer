@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -24,7 +25,14 @@ import static com.alon.main.server.Const.Consts.*;
 @Service
 public class TmdbClientService implements MovieProviderClient {
 
+    private HttpClient httpClient;
+
     private final static Logger logger = Logger.getLogger(TmdbClientService.class);
+
+    @Autowired
+    public TmdbClientService(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     @PostConstruct
     private void init() {
@@ -48,7 +56,7 @@ public class TmdbClientService implements MovieProviderClient {
                 queryParam(TMDB_APP_ID, TMDB_KEY).
                 build();
 
-        return HttpClient.call(url.toString()).
+        return httpClient.call(url.toString()).
                 thenApply(Response::getResponseBody).
                 thenApply(JSONObject::new).
                 thenApply(this::getLengthFromeJson).exceptionally(ex -> Optional.empty());
@@ -69,7 +77,7 @@ public class TmdbClientService implements MovieProviderClient {
                 queryParam(TMDB_APP_ID, TMDB_KEY).
                 build();
 
-        return HttpClient.call(url.toString()).
+        return httpClient.call(url.toString()).
                 thenApply(Response::getResponseBody).
                 thenApply(JSONObject::new).
                 thenApply(this::getOverviewFromeJson).exceptionally(ex -> Optional.empty()).get();
@@ -88,7 +96,7 @@ public class TmdbClientService implements MovieProviderClient {
     }
 
     private  Optional<String> getLengthFromeJson(JSONObject tmdbJson){
-        List<JSONObject> list = new ArrayList<JSONObject>();
+        List<JSONObject> list = new ArrayList<>();
 
         logger.debug(tmdbJson);
 

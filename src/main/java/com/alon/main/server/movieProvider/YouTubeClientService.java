@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.asynchttpclient.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +29,9 @@ public class YouTubeClientService {
 //    https://www.googleapis.com/youtube/v3/videos?id=DhNMHcRSNdo&part=contentDetails&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
 
     private final static Logger logger = Logger.getLogger(YouTubeClientService.class);
+
+    @Autowired
+    private HttpClient httpClient;
 
     @PostConstruct
     private void init() {
@@ -68,7 +72,7 @@ public class YouTubeClientService {
     }
 
     protected CompletableFuture<JSONObject> getDataFromYoutube(URI url) {
-        return HttpClient.
+        return httpClient.
                 call(url.toString()).
                 thenApply(Response::getResponseBody).
                 thenApply(JSONObject::new);

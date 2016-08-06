@@ -13,7 +13,7 @@ import java.util.*;
  * Created by alon_ss on 6/26/16.
  */
 //@Service //- Just to save all movies in DB
-public final class DbMigrator {
+public class DbMigrator {
 
     private final static Logger logger = Logger.getLogger(DbMigrator.class);
 

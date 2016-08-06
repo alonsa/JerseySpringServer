@@ -25,8 +25,8 @@ public class RestImpl {
 
 	private final static Logger logger = Logger.getLogger(RestImpl.class);
 
-	private final RestApiService restApiService;
-	private final IntooiTVMockService intooiTVMockService;
+	private RestApiService restApiService;
+	private IntooiTVMockService intooiTVMockService;
 
 	private static StopWatch stopWatch = new StopWatch();
 
@@ -77,9 +77,8 @@ public class RestImpl {
 		List<Movie> movies = restApiService.getEpgRecommendationForUser(user, currentlyPlayOption, likeCurrentlyPlay, askedMovieNum);
 
 		// TODO change to @async
-		BackgroundJob backgroundJob = new BackgroundJob(user, currentlyWatchOption, currentlyPlayOption);
-		Thread thread = new Thread(backgroundJob);
-		thread.start();
+		logger.debug("RestImpl, getEpgRecommendationForUser: " + Thread.currentThread().getName());
+		restApiService.doBackgroundJob(user, currentlyWatchOption, currentlyPlayOption, likeCurrentlyPlay);
 
 		List<Epg> epgs = movies.stream().map(intooiTVMockService::fillMovieData).map(Epg::new).collect(Collectors.toList());
 
@@ -91,37 +90,6 @@ public class RestImpl {
 		}
 
 		return epgs;
-	}
-
-	private class BackgroundJob implements Runnable{
-		private Optional<ObjectId> currentlyPlayOption;
-		private User user;
-		private Optional<ObjectId> currentlyWatchOption;
-
-		BackgroundJob(User user, Optional<ObjectId> currentlyWatchOption, Optional<ObjectId> currentlyPlayOption){
-			this.currentlyPlayOption = currentlyPlayOption;
-			this.user = user;
-			this.currentlyWatchOption = currentlyWatchOption;
-		}
-
-		@Override
-		public void run() {
-			StopWatch stopWatch = null;
-			if (logger.isDebugEnabled()){
-				stopWatch = new StopWatch();
-				stopWatch.reset();
-				stopWatch.start();
-			}
-			logger.debug("Start BackgroundJob");
-
-			restApiService.doBackgroundJob(user, currentlyWatchOption, currentlyPlayOption, likeCurrentlyPlay);
-			if (logger.isDebugEnabled() && stopWatch != null){
-				stopWatch.stop();
-				logger.debug("BackgroundJob run time: " + stopWatch.getTime() + " miilis");
-			}
-			logger.debug("End BackgroundJob");
-
-		}
 	}
 
 }

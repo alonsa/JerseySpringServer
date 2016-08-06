@@ -10,7 +10,7 @@ import static com.alon.main.server.Const.Consts.RATING_DB;
  * Created by alon_ss on 6/26/16.
  */
 @Service
-public final class RatingMorphiaDaoImpl extends MorphiaBaseDao<Rating> {
+public class RatingMorphiaDaoImpl extends MorphiaBaseDao<Rating> implements RatingDao{
 
     @Override
     public Class<Rating> getTypeClass() {

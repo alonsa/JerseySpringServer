@@ -6,6 +6,7 @@ import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.TmdbClientService;
 import com.alon.main.server.movieProvider.YouTubeClientService;
 import com.alon.main.server.service.IntooiTVMockService;
+import com.alon.main.server.service.IntooiTVMockServiceImpl;
 import com.alon.main.server.service.MovieService;
 import com.google.common.collect.Lists;
 import org.bson.types.ObjectId;
@@ -32,7 +33,7 @@ public class IntooiTVMockServiceTest {
     // This service is for tests purpose only and need to delete
 
     @InjectMocks
-    private IntooiTVMockService testingObject;
+    private IntooiTVMockServiceImpl testingObject;
 
     @Mock
     private MovieService movieService;
