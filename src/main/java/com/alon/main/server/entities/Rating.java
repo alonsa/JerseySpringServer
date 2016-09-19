@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 @Entity
 @XmlRootElement
-public class Rating extends BaseEntity implements Serializable{
+public class Rating extends ContentProviderEntity implements Serializable{
 
     private Integer userId;
 

@@ -1,6 +1,7 @@
 package com.alon.main.server.dao;
 
 import com.alon.main.server.entities.RecommandEntity;
+import org.mongodb.morphia.Key;
 import org.mongodb.morphia.query.Query;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import static com.alon.main.server.Const.Consts.INNER_ID_FIELD;
  * Created by alon_ss on 6/29/16.
  */
 
-public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends MorphiaBaseDao<T> implements RecommandDao<T> {
+public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends MorphiaContentProviderEntityDao<T> implements RecommandDao<T> {
 
     // sudo mongod --dbpath /usr/local/Cellar/mongodb/data/db
 
@@ -22,7 +23,7 @@ public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends Mor
     public List<T> getByInnerIds(List<Integer> list) {
         Query<T> query = getQuery();
         query.field(INNER_ID_FIELD).in(list);
-        return query.asList();
+        return getQueryList(query);
     }
 
     @Override
@@ -36,7 +37,7 @@ public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends Mor
     public T getByInnerId(Integer id) {
         Query<T> query = getQuery();
         query.field(INNER_ID_FIELD).equal(id);
-        return query.get();
+        return getQueryEntity(query);
     }
 
     @Override
@@ -51,10 +52,6 @@ public abstract class MorphiaRecommandDao<T extends RecommandEntity> extends Mor
             return (Integer) entity;
         }
     }
-
-
-
-
 }
 
 

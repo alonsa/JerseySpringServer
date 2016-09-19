@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Created by alon_ss on 6/26/16.
  */
 
-public interface RestApiService {
+public interface EpgService {
 
     Future<List<Rating>> doBackgroundJob(User user, Optional<ObjectId> currentlyWatchOptional,
                                          Optional<ObjectId> currentlyPlayOptional, Boolean isLikeCurrentlyPlay);

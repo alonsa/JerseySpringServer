@@ -2,6 +2,7 @@ package com.alon.main.server.dao;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Key;
+import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateResults;
 
 import java.util.Iterator;
@@ -26,11 +27,14 @@ public interface BaseDao<T> {
     Iterator<T> getNoUrl(Integer skip);
 
     Key<T> save(T entity);
-    Iterable<Key<T>> saveAll(List<T> entity);
+    Iterable<Key<T>> saveAll(Iterable<T> entity);
     Iterator<T> getAll(Integer limit, Integer offset);
     Iterator<T> getAll();
     List<T> getAllToList(Integer limit, Integer offset);
     List<T> getAllToList();
+
+    List<T> getQueryList(Query<T> query);
+    T getQueryEntity(Query<T> query);
 
     UpdateResults updateByField(T entity, Map<String, Object> map);
 

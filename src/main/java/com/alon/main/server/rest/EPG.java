@@ -1,5 +1,6 @@
 package com.alon.main.server.rest;
 
+import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.Movie;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.CharMatcher;
@@ -23,6 +24,7 @@ public class Epg {
     private String plot;
 
     private String uri;
+    private String youTubeId;
 
     private List<String> genres = new ArrayList<>();
 
@@ -34,6 +36,7 @@ public class Epg {
 
         this.title = Optional.ofNullable(movie.getTitle()).map(CharMatcher.ASCII::retainFrom).orElse(null);
         this.uri = movie.getUri().toString();
+        this.youTubeId = movie.getExternalSiteToId().getOrDefault(MovieSite.YOU_TUBE, "");
         this.length = movie.getLength();
     }
 
@@ -85,6 +88,14 @@ public class Epg {
         this.length = length;
     }
 
+    public String getYouTubeId() {
+        return youTubeId;
+    }
+
+    public void setYouTubeId(String youTubeId) {
+        this.youTubeId = youTubeId;
+    }
+
     @Override
     public String toString() {
         return "Epg{" +
@@ -94,6 +105,7 @@ public class Epg {
                 ", plot='" + plot + '\'' +
                 ", uri='" + uri + '\'' +
                 ", genres=" + genres +
+                ", youTubeId=" + youTubeId +
                 '}';
     }
 

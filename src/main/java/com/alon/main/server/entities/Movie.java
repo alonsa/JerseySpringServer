@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.alon.main.server.Const.MovieSite;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
+import org.scalactic.Bool;
 
 /**
  * Created by alon_ss on 6/28/16.
@@ -30,6 +32,12 @@ public class Movie extends RecommandEntity implements Serializable{
     private Map<MovieSite, String> externalSiteToId = new HashMap<>();
 
     private Long length;
+
+    private Long publishDate;
+
+    private Boolean forbidden;
+
+    private List<ObjectId> relatedVods = new ArrayList<>();
 
     public Movie(){}
 
@@ -98,6 +106,34 @@ public class Movie extends RecommandEntity implements Serializable{
         this.length = length;
     }
 
+    public Boolean isForbidden() {
+        return forbidden;
+    }
+
+    public void setForbidden(Boolean forbidden) {
+        this.forbidden = forbidden;
+    }
+
+    public Boolean getForbidden() {
+        return forbidden;
+    }
+
+    public List<ObjectId> getRelatedVods() {
+        return relatedVods;
+    }
+
+    public void setRelatedVods(List<ObjectId> relatedVods) {
+        this.relatedVods = relatedVods;
+    }
+
+    public Long getPublishDate() {
+        return publishDate;
+    }
+
+    public void setPublishDate(Long publishDate) {
+        this.publishDate = publishDate;
+    }
+
     @Override
     public String toString() {
         return "Movie{" +
@@ -108,24 +144,6 @@ public class Movie extends RecommandEntity implements Serializable{
                 ", genres=" + genres +
                 ", externalIds=" + externalIds +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Movie)) return false;
-
-        Movie movie = (Movie) o;
-
-        return getId().equals(movie.getId()) && getInnerId().equals(movie.getInnerId());
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getId().hashCode();
-        result = 31 * result + getInnerId().hashCode();
-        return result;
     }
 }
 

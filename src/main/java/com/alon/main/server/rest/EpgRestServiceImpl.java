@@ -1,11 +1,17 @@
 package com.alon.main.server.rest;
 
-import com.alon.main.server.entities.*;
-import com.alon.main.server.service.*;
+import com.alon.main.server.entities.CurrentlyWatch;
+import com.alon.main.server.entities.Movie;
+import com.alon.main.server.entities.User;
+import com.alon.main.server.service.EpgService;
+import com.alon.main.server.service.IntooiTVMockService;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -18,31 +24,34 @@ import static com.alon.main.server.Const.Consts.RESPONSE_NUM;
 
 @Path("/recommend/")
 @Component
-public class RestImpl {
+public class EpgRestServiceImpl {
 
 //		http://localhost:8090/recommend/epg/9021
 //		http://localhost:8090/recommend/epgs/9021
 
-	private final static Logger logger = Logger.getLogger(RestImpl.class);
+	private final static Logger logger = Logger.getLogger(EpgRestServiceImpl.class);
 
-	private RestApiService restApiService;
+	private EpgService epgService;
+
 	private IntooiTVMockService intooiTVMockService;
 
 	private static StopWatch stopWatch = new StopWatch();
 
 	@DefaultValue(RESPONSE_NUM) @QueryParam("num") Integer askedMovieNum;
 	@QueryParam("play") String play;
+	@QueryParam("type") String type;
 	@DefaultValue("true") @QueryParam("like") boolean likeCurrentlyPlay;
 
 	@Autowired
-	public RestImpl(RestApiService restApiService, IntooiTVMockService intooiTVMockService) {
+	public EpgRestServiceImpl(EpgService epgService, IntooiTVMockService intooiTVMockService) {
 
-		this.restApiService = restApiService;
+		this.epgService = epgService;
 		this.intooiTVMockService = intooiTVMockService;
 
-		logger.debug("##########################");
-		logger.debug("###   RestImpl is up!  ###");
-		logger.debug("##########################");
+		logger.debug("####################################");
+		logger.debug("###   EpgRestServiceImpl is up!  ###");
+		logger.debug("####################################");
+
 	}
 
 	@GET
@@ -71,16 +80,20 @@ public class RestImpl {
 
 		Optional<ObjectId> currentlyPlayOption = Optional.ofNullable(play).filter(ObjectId::isValid).map(ObjectId::new);
 
-		User user = restApiService.getUser(userName);
+		User user = epgService.getUser(userName);
+
+		Authentication authentication = new TestingAuthenticationToken(user, null);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
 		Optional<ObjectId> currentlyWatchOption = Optional.ofNullable(user.getCurrentlyWatch()).map(CurrentlyWatch::getMovieId);
 
-		List<Movie> movies = restApiService.getEpgRecommendationForUser(user, currentlyPlayOption, likeCurrentlyPlay, askedMovieNum);
+		List<Movie> movies = epgService.getEpgRecommendationForUser(user, currentlyPlayOption, likeCurrentlyPlay, askedMovieNum);
 
 		// TODO change to @async
 		logger.debug("RestImpl, getEpgRecommendationForUser: " + Thread.currentThread().getName());
-		restApiService.doBackgroundJob(user, currentlyWatchOption, currentlyPlayOption, likeCurrentlyPlay);
+		epgService.doBackgroundJob(user, currentlyWatchOption, currentlyPlayOption, likeCurrentlyPlay);
 
-		List<Epg> epgs = movies.stream().map(intooiTVMockService::fillMovieData).map(Epg::new).collect(Collectors.toList());
+		List<Epg> epgs = movies.stream().map(intooiTVMockService::fillMovieData).map(x -> intooiTVMockService.changeYouTubeUri(x)).map(Epg::new).collect(Collectors.toList());
 
 		logger.debug("Response: " + epgs);
 

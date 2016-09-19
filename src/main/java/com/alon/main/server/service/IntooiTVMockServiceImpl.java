@@ -4,13 +4,13 @@ import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.TmdbClientService;
-import com.alon.main.server.movieProvider.YouTubeClientService;
+import com.alon.main.server.movieProvider.YouTubeClientServiceImpl;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -30,17 +30,20 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
     // This service is for tests purpose only and need to delete
     private final static Logger logger = Logger.getLogger(IntooiTVMockServiceImpl.class);
 
-    @Autowired
+    private final static String uriTemplate = "https://www.youtube.com/embed/%s?autoplay=1";
+
     private MovieService movieService;
 
-    @Autowired
     private TmdbClientService tmdbClient;
 
-    @Autowired
-    private YouTubeClientService youTubeClient;
+    private YouTubeClientServiceImpl youTubeClient;
 
-    @PostConstruct
-    private void init() {
+    @Autowired
+    public IntooiTVMockServiceImpl(YouTubeClientServiceImpl youTubeClient, TmdbClientService tmdbClient, MovieService movieService) {
+        this.youTubeClient = youTubeClient;
+        this.tmdbClient = tmdbClient;
+        this.movieService = movieService;
+
         logger.debug("######################################");
         logger.debug("###   IntooiTVMockService is up!   ###");
         logger.debug("######################################");
@@ -59,21 +62,13 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
         }
 
         // Set URI
-        if (movie.getUri() != null){
-            if (!externalSiteToId.containsKey(YOU_TUBE)){
-                externalSiteToId.put(YOU_TUBE, getYouTubeId(movie.getUri()));
-                isNeedToSave = true;
-            }
-            if (!movie.getUri().toString().contains("embed")){
-                String youTubeId = externalSiteToId.get(YOU_TUBE);
-                URI embedUri = convertToEmbedUri(youTubeId);
-                movie.setUri(embedUri);
-                isNeedToSave = true;
-            }
+        if (movie.getUri() != null && !externalSiteToId.containsKey(YOU_TUBE)){
+            externalSiteToId.put(YOU_TUBE, getYouTubeId(movie.getUri()));
+            isNeedToSave = true;
         }
 
         if (isNeedToSave){
-            movieService.saveMovie(movie);
+            movieService.save(movie);
         }
 
         boolean isRealData = true;
@@ -85,10 +80,9 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
             isRealData = false;
         }
 
-        Optional<Long> youTubeLength = getLengthFromYouTube(movie);
-
-        if (youTubeLength.isPresent()){
-            movie.setLength(youTubeLength.get());
+        Optional<Movie> youTubeDataMovie = getDataFromYouTube(movie);
+        if (youTubeDataMovie.isPresent() && !youTubeDataMovie.map(Movie::isForbidden).get()){
+            movie.setLength(youTubeDataMovie.map(Movie::getLength).get());
         }else{
             setDefaultData(movie);
             isRealData = false;
@@ -113,9 +107,19 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
         }
 
         if (isRealData && isNeedToSave){
-            movieService.saveMovie(movie);
+            movieService.save(movie);
         }
         return movie;
+    }
+
+    @Override
+    public Movie changeYouTubeUri(Movie movie) {
+
+        String uri = String.format(uriTemplate, movie.getExternalSiteToId().get(MovieSite.YOU_TUBE));
+        movie.setUri(URI.create(uri));
+
+        return movie;
+
     }
 
     private void copyExternalInfoToMap(Movie movie) {
@@ -128,29 +132,16 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
 
         String youTubeId = null;
         if (uri != null){
-            if (uri.toString().contains("embed")){
-                youTubeId = uri.getPath().replace("/embed/", "");
-            }else{
-                youTubeId = uri.getQuery().replace("v=", "");
-            }
-
+            List<NameValuePair> params = URLEncodedUtils.parse(uri, "UTF-8");
+            Optional<String> youTubeIdOption = params.stream().filter(x -> x.getName().equals("v")).findFirst().map(NameValuePair::getValue);
+            youTubeId = youTubeIdOption.orElse(null);
         }
         return youTubeId;
     }
 
-    protected Optional<Long> getLengthFromYouTube(Movie movie) {
+    private Optional<Movie> getDataFromYouTube(Movie movie) {
         String youTubeId = movie.getExternalSiteToId().get(YOU_TUBE);
-        return youTubeClient.getVodLength(youTubeId);
-    }
-
-    private URI convertToEmbedUri(String youTubeId){
-
-        return UriBuilder.
-                fromPath("https://www.youtube.com").
-                path("embed").
-                path(youTubeId).
-                queryParam("autoplay", 1).
-                build();
+        return youTubeClient.getVideoDetails(youTubeId);
     }
 
     private void setDefaultData(Movie movie) {
@@ -187,11 +178,11 @@ public class IntooiTVMockServiceImpl implements IntooiTVMockService {
     private static Map<URI, Long> getUrisToLengthMap(){
         Map<URI, Long> urisToLength = new HashMap<>();
         try {
-            urisToLength.put(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"), 25000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/DhNMHcRSNdo?autoplay=1"), 13000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/hvha-7EvwNg?autoplay=1"), 31000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/kvg9GxWjgIw?autoplay=1"), 14000L);
-            urisToLength.put(new URI("https://www.youtube.com/embed/OT9HsNszYCI?autoplay=1"), 15000L);
+            urisToLength.put(new URI("https://www.youtube.com/watch?v=LTgRm6Qgscc"), 25000L);
+            urisToLength.put(new URI("https://www.youtube.com/watch?v=DhNMHcRSNdo"), 13000L);
+            urisToLength.put(new URI("https://www.youtube.com/watch?v=hvha-7EvwNg"), 31000L);
+            urisToLength.put(new URI("https://www.youtube.com/watch?v=kvg9GxWjgIw"), 14000L);
+            urisToLength.put(new URI("https://www.youtube.com/watch?v=OT9HsNszYCI"), 15000L);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

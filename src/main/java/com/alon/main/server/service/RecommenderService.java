@@ -1,7 +1,7 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.entities.Rating;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.mllib.recommendation.Rating;
 
 import java.util.List;
 
@@ -11,8 +11,6 @@ import java.util.List;
 
 public interface RecommenderService {
 
-    @Deprecated  // need to delete this - only use for in memory movieDao.
-    JavaSparkContext getJavaSparkContext();
     List<Integer> recommend(Integer user, Integer recommendationNumber);
     void updateModel(List<Rating> newRatings);
 }

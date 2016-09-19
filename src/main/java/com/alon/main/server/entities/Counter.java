@@ -12,12 +12,12 @@ import java.io.Serializable;
 
 @Entity
 @XmlRootElement
-public class Counter extends BaseEntity implements Serializable{
+public class Counter extends ContentProviderEntity implements Serializable{
 
     @Indexed(unique = true)
     private String entityName;
 
-    private Integer value;
+    private Integer value = 0;
 
     public Counter(){}
 

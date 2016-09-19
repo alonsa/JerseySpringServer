@@ -27,22 +27,26 @@ import static org.mockito.Mockito.when;
 /**
  * Created by alon_ss on 7/31/16.
  */
-public class RestApiServiceTest {
+public class EpgServiceImplTest {
 
     @InjectMocks
-    private RestApiServiceImpl testingObject;
+    private EpgServiceImpl testingObject;
 
     @Mock
     private UserServiceImpl userService;
 
     @Mock
-    private RecommenderService recommenderService;
+    private RecommenderService defaultRecommenderService;
 
     @Mock
     private RatingService ratingService;
 
     @Mock
     private MovieService movieService;
+
+
+    @Mock
+    private ContentProviderService contentProviderService;
 
     private Integer nextRecommendationSize = 5;
     private Integer responseSize = 2;
@@ -153,7 +157,7 @@ public class RestApiServiceTest {
         Integer recommendationsSize = nextRecommendationSize + testUser.getRecentlyWatch().size() + testUser.getNextVods().size();
         List<Movie> recommendedVods = getMovies(recommendationsSize);
         List<Integer> recommendedInnerId = recommendedVods.stream().map(RecommandEntity::getInnerId).collect(Collectors.toList());
-        when(recommenderService.recommend(any(), anyInt())).thenReturn(recommendedInnerId);
+        when(defaultRecommenderService.recommend(any(), anyInt())).thenReturn(recommendedInnerId);
         when(movieService.getByInnerIds(any())).thenReturn(recommendedVods);
 
         ArrayList<Movie> dbMovies = Lists.newArrayList();

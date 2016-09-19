@@ -12,6 +12,7 @@ import java.net.URI;
 public interface IntooiTVMockService {
 
     Movie fillMovieData(Movie movie);
+    Movie changeYouTubeUri(Movie movie);
     String getYouTubeId(URI uri);
 
 }

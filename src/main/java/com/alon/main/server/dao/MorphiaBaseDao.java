@@ -96,12 +96,29 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
 
     @Override
     public Key<T> save(T entity) {
-        return datastore.save(entity);
+        Key<T> key = datastore.save(entity);
+        if (key.getId() instanceof ObjectId){
+            entity.setId((ObjectId) key.getId());
+        }
+        return key;
     }
 
     @Override
-    public Iterable<Key<T>> saveAll(List<T> entity) {
-        return datastore.save(entity);
+    public Iterable<Key<T>> saveAll(Iterable<T> entities) {
+        Iterable<Key<T>> keys = datastore.save(entities);
+        Iterator<T> entitiesIterator = entities.iterator();
+        Iterator<Key<T>> keysIterator = keys.iterator();
+
+        while (entitiesIterator.hasNext() && keysIterator.hasNext()){
+            T entity = entitiesIterator.next();
+            Key<T> key = keysIterator.next();
+
+            if (key.getId() instanceof ObjectId){
+                entity.setId((ObjectId) key.getId());
+            }
+        }
+
+        return keys;
     }
 
     @Override
@@ -127,7 +144,6 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
     @Override
     public UpdateResults updateByField(T entity, Map<String, Object> map) {
 
-
         Query<T> query = getQuery().field(ID_FIELD).equal(entity.getId());
         UpdateOperations<T> ops = datastore.createUpdateOperations(typeParameterClass);
         for (Map.Entry<String, Object> entry: map.entrySet()){
@@ -135,6 +151,16 @@ public abstract class MorphiaBaseDao<T extends BaseEntity> implements BaseDao<T>
         }
 
         return datastore.update(query, ops);
+    }
+
+    @Override
+    public List<T> getQueryList(Query<T> query){
+        return query.asList();
+    }
+
+    @Override
+    public T getQueryEntity(Query<T> query){
+        return query.get();
     }
 
     private Query<T> getAllQuery(Integer limit, Integer offset) {

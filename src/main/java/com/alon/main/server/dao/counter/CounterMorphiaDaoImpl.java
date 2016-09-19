@@ -2,6 +2,7 @@ package com.alon.main.server.dao.counter;
 
 import com.alon.main.server.dao.MorphiaBaseDao;
 import com.alon.main.server.dao.RecommandDao;
+import com.alon.main.server.dao.movie.MovieDao;
 import com.alon.main.server.dao.user.UserDao;
 import com.alon.main.server.entities.Counter;
 import org.mongodb.morphia.query.Query;
@@ -24,9 +25,12 @@ public class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> implements Co
 
     private UserDao userDao;
 
+    private MovieDao movieDao;
+
     @Autowired
-    public CounterMorphiaDaoImpl(UserDao userDao) {
+    public CounterMorphiaDaoImpl(UserDao userDao, MovieDao movieDao) {
         this.userDao = userDao;
+        this.movieDao = movieDao;
     }
 
     @Override
@@ -44,7 +48,8 @@ public class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> implements Co
     @PostConstruct
     protected void init() {
         super.init();
-        initCounter(userDao);
+        initUserCounter();
+        initVodCounter();
     }
 
     public Integer increase(String entityName){
@@ -55,35 +60,30 @@ public class CounterMorphiaDaoImpl extends MorphiaBaseDao<Counter> implements Co
             return counter.getValue();
     }
 
-    private void initCounter(RecommandDao counterEntityDao) {
-        String entityName = counterEntityDao.getTypeClass().getSimpleName();
+    private void initUserCounter() {
+        String entityName = userDao.getTypeClass().getSimpleName();
         Counter counter = getByName(entityName);
-        addIfMissing(counterEntityDao, entityName, counter);
+        addIfMissing(userDao, entityName, counter, 13062);
     }
 
-    private Counter addIfMissing(RecommandDao counterEntityDao, String entityName, Counter counter) {
+    private void initVodCounter() {
+        String entityName = movieDao.getTypeClass().getSimpleName();
+        Counter counter = getByName(entityName);
+        addIfMissing(movieDao, entityName, counter, 0);
+    }
+
+    private Counter addIfMissing(RecommandDao counterEntityDao, String entityName, Counter counter, Integer initValue) {
         if (counter == null){
-            Long number = Optional.of(counterEntityDao.count()).orElse(0L);
+            Long number = Optional.of(counterEntityDao.count()).orElse(0L) + initValue;
             counter = new Counter(entityName, number.intValue());
             this.save(counter);
         }
         return counter;
     }
 
-    private Counter getAndCreateByName(String name) {
-        Counter counter = getByName(name);
-        if (nameToDao.containsKey(name)){
-            counter = addIfMissing(nameToDao.get(name), name, counter);
-        }
-
-        return counter;
-    }
-
-
     private Counter getByName(String name) {
         Query<Counter> query = getQuery();
         query.field(ENTITY_NAME_FIELD).equal(name);
         return query.get();
     }
-
 }

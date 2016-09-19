@@ -4,8 +4,7 @@ import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.entities.ExternalId;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.TmdbClientService;
-import com.alon.main.server.movieProvider.YouTubeClientService;
-import com.alon.main.server.service.IntooiTVMockService;
+import com.alon.main.server.movieProvider.YouTubeClientServiceImpl;
 import com.alon.main.server.service.IntooiTVMockServiceImpl;
 import com.alon.main.server.service.MovieService;
 import com.google.common.collect.Lists;
@@ -17,6 +16,7 @@ import static org.mockito.Mockito.*;
 import org.mockito.MockitoAnnotations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.net.URI;
@@ -42,13 +42,12 @@ public class IntooiTVMockServiceTest {
     private TmdbClientService tmdbClient;
 
     @Mock
-    private YouTubeClientService youTubeClient;
+    private YouTubeClientServiceImpl youTubeClient;
 
     @BeforeMethod
     public void initMocks(){
         MockitoAnnotations.initMocks(this);
     }
-
 
     @Test
     public void getYouTubeIdWatched(){
@@ -63,18 +62,6 @@ public class IntooiTVMockServiceTest {
     }
 
     @Test
-    public void getYouTubeIdEmbed(){
-        URI uri = null;
-
-        try {
-            uri = new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1");
-        } catch ( URISyntaxException ignored) {}
-
-        String id = testingObject.getYouTubeId(uri);
-        Assert.assertEquals(id, "LTgRm6Qgscc");
-    }
-
-    @Test
     public void getYouTubeIdNull(){
         String id = testingObject.getYouTubeId(null);
         Assert.assertNull(id);
@@ -84,7 +71,8 @@ public class IntooiTVMockServiceTest {
     public void fillMovieDataFullMovie(){
         Movie movie = getMovie();
         movie.setLength(100L);
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(100L));
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
 
         Movie fullDetailedMovie = testingObject.fillMovieData(movie);
         Assert.assertEquals(fullDetailedMovie, movie);
@@ -93,11 +81,11 @@ public class IntooiTVMockServiceTest {
 
     @Test
     public void fillMovieDataFullMovieWithTmdbDataAndBadURL(){
-
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.empty());
-
         Movie movie = getMovie();
         movie.setLength(100L);
+        movie.setForbidden(true);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+
         List<ExternalId> externalIds = Lists.newArrayList();
         ExternalId externalId = new ExternalId(MovieSite.TMDB, "8844");
         externalIds.add(externalId);
@@ -112,10 +100,11 @@ public class IntooiTVMockServiceTest {
     @Test
     public void fillMovieDataFullMovieWithTmdbDataAndGoodURL(){
 
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(111L));
-
         Movie movie = getMovie();
         movie.setLength(100L);
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+
         List<ExternalId> externalIds = Lists.newArrayList();
         ExternalId externalId = new ExternalId(MovieSite.TMDB, "8844");
         externalIds.add(externalId);
@@ -126,14 +115,27 @@ public class IntooiTVMockServiceTest {
         testMovie(fullDetailedMovie);
     }
 
+//    @BeforeMethod
+//    public void beforeFillMovieDataFullMovieWithTmdbDataAndURL(){
+//        MockitoAnnotations.initMocks(this);
+//        try {
+//            when(tmdbClient.getFutureOverview(anyString())).thenReturn(Optional.of("mock overview: 666"));
+//        } catch (ExecutionException | InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
     @Test
     public void fillMovieDataFullMovieWithTmdbDataAndURL() throws URISyntaxException, ExecutionException, InterruptedException {
 
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(111L));
-        when(tmdbClient.getFutureOverview(any())).thenReturn(Optional.of("mock overview"));
-
         Movie movie = getMovie();
         movie.setLength(100L);
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+        when(tmdbClient.getFutureOverview(anyString())).thenReturn(Optional.of("mock overview: 8844"));
+//        doReturn(Optional.of("mock overview: 8844")).when(tmdbClient).getFutureOverview(anyString());
+
+
         movie.setUri(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"));
         List<ExternalId> externalIds = Lists.newArrayList();
         ExternalId externalId = new ExternalId(MovieSite.TMDB, "8844");
@@ -148,11 +150,12 @@ public class IntooiTVMockServiceTest {
     @Test
     public void fillMovieDataFullMovieWithTmdbDataAndURLNoOverview() throws URISyntaxException, ExecutionException, InterruptedException {
 
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(100L));
-        when(tmdbClient.getFutureOverview(any())).thenReturn(Optional.empty());
-
         Movie movie = getMovie();
         movie.setLength(100L);
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+        when(tmdbClient.getFutureOverview(any())).thenReturn(Optional.empty());
+
         movie.setUri(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"));
         List<ExternalId> externalIds = Lists.newArrayList();
         ExternalId externalId = new ExternalId(MovieSite.TMDB, "8844");
@@ -167,11 +170,12 @@ public class IntooiTVMockServiceTest {
     @Test
     public void fillMovieDataFullMovieWithURLNoOverview() throws URISyntaxException, ExecutionException, InterruptedException {
 
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(111L));
-        when(tmdbClient.getFutureOverview(any())).thenReturn(Optional.empty());
-
         Movie movie = getMovie();
         movie.setLength(100L);
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+        when(tmdbClient.getFutureOverview(any())).thenReturn(Optional.empty());
+
         movie.setUri(new URI("https://www.youtube.com/embed/LTgRm6Qgscc?autoplay=1"));
 
         Movie fullDetailedMovie = testingObject.fillMovieData(movie);
@@ -181,9 +185,11 @@ public class IntooiTVMockServiceTest {
 
     @Test
     public void fillMovieDataNoUrilMovie(){
-        when(youTubeClient.getVodLength(any())).thenReturn(Optional.of(100L));
-
         Movie movie = getMovie();
+        movie.setLength(100L);
+        movie.setForbidden(false);
+        when(youTubeClient.getVideoDetails(anyString())).thenReturn(Optional.of(movie));
+
         Movie fullDetailedMovie = testingObject.fillMovieData(movie);
         testMovie(fullDetailedMovie);
     }

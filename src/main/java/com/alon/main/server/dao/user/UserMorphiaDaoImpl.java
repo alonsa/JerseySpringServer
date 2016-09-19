@@ -29,6 +29,7 @@ public class UserMorphiaDaoImpl extends MorphiaRecommandDao<User> implements Use
     public User getByName(String name) {
         Query<User> query = getQuery();
         query.field(NAME_FIELD).equal(name);
+
         return query.get();
     }
 

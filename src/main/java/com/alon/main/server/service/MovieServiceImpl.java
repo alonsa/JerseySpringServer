@@ -1,5 +1,6 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.Const.MovieSite;
 import com.alon.main.server.dao.movie.MovieDao;
 import com.alon.main.server.entities.Movie;
 import org.apache.log4j.Logger;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 
 @Service
-public class MovieServiceImpl implements MovieService{
+public class MovieServiceImpl extends RecommendEntityServiceImpl<Movie> implements MovieService{
 
     private final static Logger logger = Logger.getLogger(MovieServiceImpl.class);
 
@@ -29,21 +30,44 @@ public class MovieServiceImpl implements MovieService{
     @Autowired
     public MovieDao movieDao;
 
-    public List<Movie> getByInnerIds(List<Integer> moviesInnerIds) {
-        return movieDao.getOrderedByInnerIds(moviesInnerIds);
-    }
+//    @Override
+//    public void save(Movie entity) {
+//        movieDao.save(entity);
+//    }
 
-    public void saveMovie(Movie movie){
-        movieDao.save(movie);
-    }
+//    @Override
+//    public void saveAll(List<Movie> list) {
+//        movieDao.saveAll(list);
+//    }
 
+//    @Override
+//    public void saveMovie(Movie movie){
+//        movieDao.save(movie);
+//    }
+//
+//    @Override
+//    public void saveMovies(List<Movie> movies) {
+//        movieDao.saveAll(movies);
+//    }
+
+    @Override
     public List<Movie> getByIds(List<ObjectId> moviesInnerIds) {
         return movieDao.getOrderedByIds(moviesInnerIds);
     }
 
+    @Override
     public Movie getById(ObjectId movieId) {
         return movieDao.getById(movieId);
     }
 
+    @Override
+    public Movie findByExternalSiteId(MovieSite site, String externalId){
+        return movieDao.findByExternalSiteId(site, externalId);
+    }
+
+    @Override
+    public List<Movie> findByExternalSiteIds(MovieSite site, Iterable<String> externalId){
+        return movieDao.findByExternalSiteIds(site, externalId);
+    }
 
 }

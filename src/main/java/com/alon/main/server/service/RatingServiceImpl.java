@@ -40,7 +40,11 @@ public class RatingServiceImpl implements RatingService{
     public void addRatings(List<Rating> newRatings) {
         List<Rating> checkedRatings = newRatings.stream().filter(Rating::isValid).collect(Collectors.toList());
         List<Rating> notValidRatings = newRatings.stream().filter(x-> !x.isValid()).collect(Collectors.toList());
-        logger.warn("There are some non valid rating that send to DB: " + notValidRatings);
+
+        if (!notValidRatings.isEmpty()){
+            logger.warn("There are some non valid rating that send to DB: " + notValidRatings);
+        }
+
         ratingDao.saveAll(checkedRatings);
     }
 }

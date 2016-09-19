@@ -1,0 +1,147 @@
+
+form {
+    margin: 0;
+    padding: 0;
+}
+
+.body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+.content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.video-container {
+    height: 100%;
+}
+
+#video-frame {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    pointer-events: none;
+}
+
+.icon {
+    position: absolute;
+    width: 150px;
+    left: 25px;
+    top: 40px;
+    background-color: #2cb15a;
+}
+
+.btns-location {
+    position: absolute;
+    bottom: 50px;
+    width: 100%;
+    transition: visibility 0s, opacity 3.0s linear;
+    opacity:0
+
+}
+
+.btns-container {
+    text-align: center;
+    display: flex;
+    justify-content : space-around;
+}
+
+.actions-buttons {
+    width: 450px;
+    height: 90px;
+    text-align: left;
+}
+
+.movie-body {
+    display: flex;
+    justify-content : space-around;
+    background-color: black;
+    color: white;
+    font-size: 90%;
+    padding: 5px 0;
+}
+
+.movie-body-text {
+    display: flex;
+    flex-direction: column;
+    height: 55px;
+}
+
+.button-header {
+    color: white;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.movie-body-action-area{
+    display: flex;
+
+    justify-content : flex-end;
+    align-items : flex-end;
+}
+
+.change-button {
+    display: flex;
+
+    justify-content : flex-end;
+    align-items : flex-end;
+
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.button-image {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.popup {
+    position: absolute;
+    color: white;
+    text-shadow: -2px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    font-weight: bold;
+    display:none;
+
+}
+
+#first-movie-plot, #second-movie-plot{
+    max-lines: 3;
+    overflow:auto;
+
+    font-size: 85%;
+    display: inline-block;
+    width: 320px;
+    height: 100%;
+    max-height: 100%;
+    margin-right: 20px;
+    vertical-align: top;
+}
+
+#first-movie-plot::-webkit-scrollbar, #second-movie-plot::-webkit-scrollbar {
+    /* This is the magic bit */
+    /*display: none;*/
+    background-color: black;
+    -ms-scrollbar-arrow-color: yellow;
+}
+
+hr{
+    border-width: 5px;
+    color: #8b282b;
+    border-color: #8b282b;
+    background-color: #8b282b;
+    margin-bottom: auto;
+}
+

@@ -1,10 +1,14 @@
 package com.alon.main.server.service;
 
+import com.alon.main.server.Const.RecommendedLogicEnum;
 import com.alon.main.server.entities.*;
+import com.google.common.collect.Maps;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -24,11 +28,11 @@ import java.util.stream.Collectors;
  */
 
 @Service
-public class RestApiServiceImpl implements RestApiService {
+public class EpgServiceImpl implements EpgService {
 
-    private final static Logger logger = Logger.getLogger(RestApiServiceImpl.class);
+    private final static Logger logger = Logger.getLogger(EpgServiceImpl.class);
 
-    private RecommenderService recommenderService;
+    private Map<String, RecommenderService> recommenders = Maps.newHashMap();
 
     private UserService userService;
 
@@ -36,23 +40,34 @@ public class RestApiServiceImpl implements RestApiService {
 
     private MovieService movieService;
 
+    private RecommenderService defaultRecommenderService;
+
+    private ContentProviderService contentProviderService;
+
     @Value("${user.next.recommendation.size}")
     private Integer nextRecommendationSize;
 
     @Autowired
-    public RestApiServiceImpl(RecommenderService recommenderService, RatingService ratingService, MovieService movieService, UserService userService) {
-        this.recommenderService = recommenderService;
+    public EpgServiceImpl(
+            RatingService ratingService,
+            MovieService movieService,
+            UserService userService,
+            ContentProviderService contentProviderService,
+            ApplicationContext applicationContext,
+            @Qualifier("recommenderServiceByRelatedImpl") RecommenderService defaultRecommenderService)
+    {
         this.ratingService = ratingService;
         this.movieService = movieService;
         this.userService = userService;
-    }
-
-    @PostConstruct
-    public void init() {
+        this.contentProviderService = contentProviderService;
+        if (applicationContext != null){
+            recommenders = applicationContext.getBeansOfType(RecommenderService.class);
+        }
 
         logger.debug("#################################");
-        logger.debug("###   RestApiService is up!   ###");
+        logger.debug("###   EpgService is up!   ###");
         logger.debug("#################################");
+        this.defaultRecommenderService = defaultRecommenderService;
     }
 
     @Async
@@ -96,18 +111,15 @@ public class RestApiServiceImpl implements RestApiService {
 
         if (!newRatings.isEmpty()){
             List<Rating> checkedRatings = newRatings.stream().filter(Rating::isValid).collect(Collectors.toList());
-
             ratingService.addRatings(checkedRatings);
-            List<org.apache.spark.mllib.recommendation.Rating> sparkRating = checkedRatings.stream().
-                    map(r -> new org.apache.spark.mllib.recommendation.Rating(r.getUserId(), r.getMovieId(), r.getRating())).
-                    collect(Collectors.toList());
-            recommenderService.updateModel(sparkRating);
+            recommenders.values().forEach(x -> x.updateModel(checkedRatings));
         }
 
         return new AsyncResult<>(newRatings);
     }
 
     public User getUser(String userName){
+
         logger.debug("Look for user: " + userName);
         User user = userService.getUserByName(userName);
         logger.debug("Found user:" + user);
@@ -178,7 +190,7 @@ public class RestApiServiceImpl implements RestApiService {
 
     private List<Movie> getFromRecommendationService(User user, Integer recommandNum) {
         // Get recommended vods Ids
-        List<Integer> recommendedMoviesInnerIds = recommenderService.recommend(user.getInnerId(), recommandNum);
+        List<Integer> recommendedMoviesInnerIds = getRecommenderService(user).recommend(user.getInnerId(), recommandNum);
         logger.debug("Recommended vods Ids: " +  recommendedMoviesInnerIds);
 
         // Get the movies by the Ids
@@ -191,5 +203,15 @@ public class RestApiServiceImpl implements RestApiService {
 
         // Map the movie ids to movies - while keep the order
         return recommendedMoviesInnerIds.stream().map(innerIdToMovie::get).collect(Collectors.toList());
+    }
+
+    private RecommenderService getRecommenderService(User user){
+        ContentProvider contentProviderDB = contentProviderService.getById(user.getCpId());
+        RecommendedLogicEnum recommendedLogicEnum = Optional.ofNullable(contentProviderDB)
+                .map(ContentProvider::getRecomenderLogic)
+                .flatMap(Optional::ofNullable)
+                .orElse(RecommendedLogicEnum.RELATED);
+
+        return recommenders.getOrDefault(recommendedLogicEnum.toString(), defaultRecommenderService);
     }
 }
