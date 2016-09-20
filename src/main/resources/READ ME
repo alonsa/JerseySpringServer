@@ -19,8 +19,10 @@ sudo service mongod start
 
 copy to server:
 1. go to: cd /usr/local/etc/openssl/
+2. sudo ssh -i intooiTV.pem ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com
 2. sudo cp -R /usr/share/tomcat8/webapps/ServerSide /usr/share/tomcat8/webapps/ServerSide.old
 3. sudo cp -R /usr/share/tomcat8/webapps/ServerSide.war /usr/share/tomcat8/webapps/ServerSide.war.old
+exit
 4. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/ServerSide.war ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:ServerSide.war
 5. sudo ssh -i intooiTV.pem ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com
 6. sudo rm -rf /usr/share/tomcat8/webapps/ServerSide

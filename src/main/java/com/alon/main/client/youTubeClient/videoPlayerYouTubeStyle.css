@@ -37,6 +37,17 @@ form {
     background-color: #2cb15a;
 }
 
+.innerDiv {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    opacity:0
+
+}
+
 .btns-location {
     position: absolute;
     bottom: 50px;

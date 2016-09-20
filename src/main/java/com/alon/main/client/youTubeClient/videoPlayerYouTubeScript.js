@@ -1,7 +1,7 @@
 
 
-   var url = "http://localhost:8090/recommend/epgs/";
-   // var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
+   // var url = "http://localhost:8090/recommend/epgs/";
+   var url = "http://ec2-52-33-215-84.us-west-2.compute.amazonaws.com:8080/ServerSide/recommend/epgs/";
    var user;
    var youTubeUrl;
    var youTubeId;
@@ -14,26 +14,18 @@
    var youTubeIdSet = false;
    initialize();
 
-
    function onYouTubeIframeAPIReady() {
        player = new YT.Player('video-container', {
            width: 600,
            height: 400,
-           // videoId: 'Xa0Q0J5tOP0',
-           // videoId: youTubeId,
            playerVars: {
                color: 'white',
                'autoplay': 1
-               // playlist: 'taJ60kskkns,FG0fTKAqZ5g'
            },
            events: {
-               onReady: initializeTimer,
-               onmouseover:showPopup
-
+               onReady: initializeTimer
            }
        });
-
-       // $('#video-container').mouseover(function(event) {showPopup();})
    }
 
    function setFirstButtom(firstElement) {
@@ -69,7 +61,6 @@
        setSecondButtom(arr[1]);
 
        initialized = true;
-
    }
 
    function initialize(){
@@ -132,9 +123,11 @@
        var duration = player.getDuration();
        var playerCurrentTime = player.getCurrentTime();
 
-       var timeDuration = formatTime(player.getDuration() - player.getCurrentTime());
+       var timeDuration = formatTime(duration - playerCurrentTime);
 
-       document.getElementById("timer").innerHTML = "Ends in: " + timeDuration;
+       if (!timeDuration.includes("NaN")){
+           document.getElementById("timer").innerHTML = "Ends in: " + timeDuration;
+       }
 
        if (duration > 0 && duration === playerCurrentTime){
            window.location.href = getRefreshPage();
@@ -153,6 +146,8 @@
    }
 
    function showPopup() {
+       console.log("showPopup");
+
        if (initialized){
            var btns = document.getElementsByClassName("btns-location");
 
@@ -219,5 +214,3 @@
            document.getElementById("second-movie-body-text").setAttribute("style", "transition: visibility 0s, opacity 0.3s linear; opacity:1;");
        }
    }
-
-

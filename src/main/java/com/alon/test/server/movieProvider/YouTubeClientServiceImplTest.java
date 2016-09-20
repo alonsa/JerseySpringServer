@@ -15,7 +15,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -132,7 +131,7 @@ public class YouTubeClientServiceImplTest {
         contentProvider.setYouTubeId("");
         Long lastDataFetch = contentProvider.getLastDataFetch();
         contentProvider.setLastDataFetch(DateTime.now().getMillis());
-        Set<String> contentProviderVods = testedClass.getContentProviderVods(contentProvider, lastDataFetch);
+        Set<String> contentProviderVods = testedClass.getContentProviderVodIds(contentProvider.getYouTubeId(), lastDataFetch, Optional.empty());
 
         HashSet<String> testedSet = Sets.newHashSet("7aG50_Gg6oE");
 
@@ -156,7 +155,7 @@ public class YouTubeClientServiceImplTest {
         contentProvider.setYouTubeId("");
         Long lastDataFetch = contentProvider.getLastDataFetch();
         contentProvider.setLastDataFetch(DateTime.now().getMillis());
-        Set<String> contentProviderVods = testedClass.getContentProviderVods(contentProvider, lastDataFetch);
+        Set<String> contentProviderVods = testedClass.getContentProviderVodIds(contentProvider.getYouTubeId(), lastDataFetch, Optional.empty());
 
         HashSet<String> testedSet = Sets.newHashSet("d4HO9UY9Mb0", "7aG50_Gg6oE", "5PLx-kNkVxA", "18RXuWMyHNI", "sp6n6bOxyPo");
 

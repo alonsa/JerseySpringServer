@@ -52,7 +52,7 @@ public class UserServiceImpl extends RecommendEntityServiceImpl<User> implements
 
         List<ContentProvider> contentProviderList = contentProviderService.getAll();
         ObjectId contentProviderId = contentProviderList.stream()
-                .filter(cp -> userName.contains(cp.getName()))
+                .filter(cp -> userName.toLowerCase().contains(cp.getName().toLowerCase()))
                 .map(BaseEntity::getId)
                 .findFirst()
                 .orElse(new ObjectId("57d11fd065ff5b8a81c97685"));

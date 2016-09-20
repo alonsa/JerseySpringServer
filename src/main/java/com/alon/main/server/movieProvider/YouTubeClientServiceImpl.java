@@ -1,6 +1,7 @@
 package com.alon.main.server.movieProvider;
 
 import com.alon.main.server.Const.MovieSite;
+import com.alon.main.server.Const.YouTubeOrderEnum;
 import com.alon.main.server.entities.ContentProvider;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.http.HttpClient;
@@ -26,10 +27,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.alon.main.server.Const.Consts.*;
 import static com.alon.main.server.Const.YouTubeOrderEnum.DATE;
+import static com.alon.main.server.Const.YouTubeOrderEnum.VIEW_COUNT;
 
 /**
  * Created by alon_ss on 7/7/16.
@@ -62,8 +65,37 @@ public class YouTubeClientServiceImpl implements YouTubeClientService {
         logger.debug("######################################");
     }
 
-    //GET https://www.googleapis.com/youtube/v3/videos?part=snippet%2C+contentDetails&id=d4HO9UY9Mb0&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
     public Set<Movie> getVideoDetails(Set<String> videoIds){
+
+        if (videoIds.size() > YOU_TUBE_MAX_RESULTS_VAL){
+
+            List<List<String>> lists = Lists.partition(Lists.newArrayList(videoIds), YOU_TUBE_MAX_RESULTS_VAL);
+
+            return lists.parallelStream().
+                    map(list -> getSplittedVideoDetails(Sets.newHashSet(list))).
+                    map(Collection::stream).
+                    flatMap(Function.identity()).
+                    collect(Collectors.toSet());
+
+        }else{
+            return getSplittedVideoDetails(videoIds);
+        }
+    }
+
+    public Optional<Movie> getVideoDetails(String videoId){
+
+        Set<String> idSet = Sets.newHashSet(videoId);
+        Set<Movie> videos = getVideoDetails(idSet);
+
+        Optional<Movie> response = Optional.empty();
+        if (!videos.isEmpty()){
+            response=  Optional.of(videos.iterator().next());
+        }
+
+        return response;
+    }
+
+    private Set<Movie> getSplittedVideoDetails(Set<String> videoIds){
 
         String strignIds = StringUtils.join(videoIds, COMMA);
 
@@ -89,20 +121,8 @@ public class YouTubeClientServiceImpl implements YouTubeClientService {
         return videos;
     }
 
-    public Optional<Movie> getVideoDetails(String videoId){
 
-        Set<String> idSet = Sets.newHashSet(videoId);
-        Set<Movie> videos = getVideoDetails(idSet);
-
-        Optional<Movie> response = Optional.empty();
-        if (!videos.isEmpty()){
-            response=  Optional.of(videos.iterator().next());
-        }
-
-        return response;
-    }
-
-    // https://www.googleapis.com/youtube/v3/search?channelId=UCbcovN-W9s9bkoe0wqIEjGg&part=snippet&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA&order=date&type=channel
+    @Override
     public Optional<ContentProvider> getContentProviderByChannelId(String channelId){
 
         if (channelId == null){
@@ -132,32 +152,46 @@ public class YouTubeClientServiceImpl implements YouTubeClientService {
         return optionalContentProvider;
     }
 
-    // https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UCbcovN-W9s9bkoe0wqIEjGg&publishedAfter=2016-01-01T20%3A07%3A49.000Z&type=video&key=%20AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
-    public Set<String> getContentProviderVods(ContentProvider contentProvider, Long lastDataFetch){
+    @Override
+    public Set<String> getContentProviderVodIds(String youTubeId, Long lastDataFetch, Optional<Integer> maxSize){
+        List<String> contentProviderVodIds = getContentProviderVodIds(youTubeId, lastDataFetch, maxSize, DATE);
+        return Sets.newHashSet(contentProviderVodIds);
+    }
 
-        Date publishedAfterDate = new Date(contentProvider.getLastDataFetch());
+    @Override
+    public List<String> getContentProviderMostPopularVodIds(String youTubeId, Long lastDataFetch, Optional<Integer> maxSize){
+        return getContentProviderVodIds(youTubeId, lastDataFetch, maxSize, VIEW_COUNT);
+    }
+
+    private List<String> getContentProviderVodIds(String youTubeId, Long lastDataFetch, Optional<Integer> maxSize, YouTubeOrderEnum youTubeOrderEnum){
+
+        Date publishedAfterDate = new Date(lastDataFetch);
         String publishedAfterString = simpleDateFormat.format(publishedAfterDate);
 
         //https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=UCbcovN-W9s9bkoe0wqIEjGg&publishedAfter=2016-01-01T20%3A07%3A49.000Z&type=video&key=%20AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
         UriBuilder uriBuilder = UriBuilder.
                 fromUri(YOU_TUBE_BASE_URL).
                 path(YOU_TUBE_SEARCH).
-                queryParam(YOU_TUBE_CHANNEL_ID, contentProvider.getYouTubeId()).
+                queryParam(YOU_TUBE_CHANNEL_ID, youTubeId).
                 queryParam(YOU_TUBE_PART, YOU_TUBE_SNIPPET).
                 queryParam(YOU_TUBE_KEY, YOU_TUBE_PRIVATE_KEY).
                 queryParam(YOU_TUBE_MAX_RESULTS, YOU_TUBE_MAX_RESULTS_VAL).
-                queryParam(YOU_TUBE_ORDER, DATE).
+                queryParam(YOU_TUBE_ORDER, youTubeOrderEnum).
                 queryParam(YOU_TUBE_TYPE, YOU_TUBE_VIDEO).
                 queryParam(YOU_TUBE_PUBLISHED_AFTER, publishedAfterString);
 
         List<String> contentProviderVods = Lists.newArrayList();
 
         Optional<String> optionalNextPageToken = addVods(uriBuilder.clone(), Optional.empty(), contentProviderVods, null);
-        while (optionalNextPageToken.isPresent()){
+        while (optionalNextPageToken.isPresent() && (!maxSize.isPresent() || contentProviderVods.size() < maxSize.get())){
             optionalNextPageToken = addVods(uriBuilder.clone(), optionalNextPageToken, contentProviderVods, null);
         }
 
-        return Sets.newHashSet(contentProviderVods);
+        if (maxSize.isPresent()){
+            contentProviderVods = contentProviderVods.subList(0, maxSize.get());
+        }
+
+        return contentProviderVods;
     }
 
     // https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=d4HO9UY9Mb0&type=video&key=AIzaSyAFk7VG3KeC4qq5Tyk1Dp4ew7UN5hnb3gA
@@ -218,10 +252,18 @@ public class YouTubeClientServiceImpl implements YouTubeClientService {
 
 
     protected CompletableFuture<JSONObject> getDataFromYoutube(URI url) {
+
         return httpClient.
                 call(url.toString()).
                 thenApply(Response::getResponseBody).
-                thenApply(JSONObject::new);
+                thenApply(JSONObject::new).
+                thenApply(x -> {printLog(url, x); return x;});
+
+    }
+
+    private static void printLog(URI url, JSONObject jsonObject){
+        String sb = "YouTube request: \n" + url + "\n" + "YouTube response: \n" + jsonObject + "\n";
+        logger.debug(sb);
     }
 
     private Set<Movie> getVideos(JSONObject youTubeJson){
@@ -355,6 +397,10 @@ public class YouTubeClientServiceImpl implements YouTubeClientService {
                 .collect(Collectors.toSet());
 
         contentProviderVods.addAll(channelVods);
+
+        if (channelVods.isEmpty()){
+            optionalNextPageToken = Optional.empty();
+        }
 
         return optionalNextPageToken;
     }
