@@ -45,6 +45,8 @@ copy client:
 5. sudo scp -i intooiTV.pem  /Users/alon_ss/Learning/Recommender/simpleServer/target/videoPlayer.html ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com:videoPlayer.html
 6. sudo ssh -i intooiTV.pem ec2-user@ec2-52-33-215-84.us-west-2.compute.amazonaws.com
 7. sudo cp -R /usr/share/tomcat8/webapps/intooitv /usr/share/tomcat8/webapps/intooitv.old
+6. sudo rm -rf /usr/share/tomcat8/webapps/intooit
+
 7. sudo cp videoPlayer.html /usr/share/tomcat8/webapps/intooitv/videoPlayer.html
 
 Logs:

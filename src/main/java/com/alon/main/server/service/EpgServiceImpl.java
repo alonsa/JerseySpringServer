@@ -112,7 +112,7 @@ public class EpgServiceImpl implements EpgService {
         if (!newRatings.isEmpty()){
             List<Rating> checkedRatings = newRatings.stream().filter(Rating::isValid).collect(Collectors.toList());
             ratingService.addRatings(checkedRatings);
-            recommenders.values().forEach(x -> x.updateModel(checkedRatings));
+            getRecommenderService(user).updateModel(checkedRatings);
         }
 
         return new AsyncResult<>(newRatings);

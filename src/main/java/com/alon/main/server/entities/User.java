@@ -46,6 +46,7 @@ public class User extends RecommandEntity implements Serializable{
     }
 
     public void addToRecentlyWatch(ObjectId movieId) {
+        recentlyWatch.remove(movieId);
         recentlyWatch.add(movieId);
     }
 

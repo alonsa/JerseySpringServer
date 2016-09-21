@@ -12,6 +12,7 @@
    var playerSet = false;
    var playerDefined = false;
    var youTubeIdSet = false;
+   var timeOutResponse;
    initialize();
 
    function onYouTubeIframeAPIReady() {
@@ -100,6 +101,8 @@
 
        setPlayer();
 
+       player.onmousemove = showPopup();
+
        updateTimerDisplay();
 
        time_update_interval = setInterval(function () {
@@ -145,8 +148,33 @@
        return minutes + ":" + seconds;
    }
 
+   // function showPopup() {
+   //     console.log("showPopup");
+   //
+   //     if (initialized){
+   //         var btns = document.getElementsByClassName("btns-location");
+   //
+   //         var i;
+   //         for (i = 0; i < btns.length; i++) {
+   //             btns[i].setAttribute("style", "transition: visibility 0s, opacity 1.0s linear; opacity:1;");
+   //         }
+   //
+   //         setTimeout(function(){ hidePopup();}, 5000);
+   //     }
+   // }
+
+   function showPopupPermenent() {
+       console.log("showPopupPermenent");
+       showPopupWithTimer(true)
+   }
+
    function showPopup() {
        console.log("showPopup");
+       showPopupWithTimer(false)
+   }
+
+   function showPopupWithTimer(isPermenent) {
+
 
        if (initialized){
            var btns = document.getElementsByClassName("btns-location");
@@ -156,7 +184,11 @@
                btns[i].setAttribute("style", "transition: visibility 0s, opacity 1.0s linear; opacity:1;");
            }
 
-           setTimeout(function(){ hidePopup();}, 5000);
+           if (!isPermenent){
+               timeOutResponse = setTimeout(function(){ hidePopup();}, 5000);
+           }else{
+               clearTimeout(timeOutResponse);
+           }
        }
    }
 
