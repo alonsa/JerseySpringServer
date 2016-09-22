@@ -1,0 +1,74 @@
+<html>
+
+    <head>
+        <link rel="stylesheet" href="videoPlayerYouTubeStyle.css">
+        <script src="videoPlayerYouTubeScript.js"></script>
+        <script src="https://www.youtube.com/iframe_api"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    </head>
+
+    <!--<body class="body" onmousemove=showPopup();>-->
+    <body class="body" >
+
+        <div class="content">
+            <div id="video-container">
+                <!--<iframe id="video-container"></iframe>-->
+            </div>
+
+            <img src="comlex.jpeg" class="icon" />
+
+            <!--<div class="innerDiv"></div>-->
+
+            <div class="btns-location" onmouseover=showPopupPermenent(); onmouseout=showPopup();>
+                <div class="btns-container">
+
+                    <div class="actions-buttons">
+                        <div class=button-header>&nbsp&nbsp&nbsp Now Playing:</div>
+                        <hr>
+                        <div class="movie-body" >
+
+                            <div class="movie-body-text" >
+                                <div id="first-movie-title"></div>
+                                <div id="first-movie-plot"></div>
+                            </div>
+
+                            <div class="movie-body-action-area" >
+                                <div id="timer" ></div>
+                            </div>
+
+                            <div class = "change-button">
+                                <div class="popup" id="popupId" >Next</div>
+                                <button  class = "button" onclick=skipButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                                    <img class = "button-image" src="https://openclipart.org/download/161389/Next-Track.svg" height="40" ; border="0"/>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="actions-buttons">
+                        <div class=button-header>&nbsp&nbsp&nbsp Next pick:</div>
+
+                        <hr>
+
+                        <div class="movie-body" >
+                            <div class="movie-body-text" id="second-movie-body-text">
+                                <div id="second-movie-title" ></div>
+                                <div id="second-movie-plot" ></div>
+                            </div>
+
+                            <div class = "change-button">
+                                <button  class = "button" onclick=trashButtonLogic(); type="submit" style="background-color:transparent; border-color:transparent;">
+                                    <img class = "button-image" src="https://openclipart.org/download/228856/1443908522.svg" height="40" ; border="0"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </body>
+</html>
