@@ -4,7 +4,6 @@ import com.alon.main.server.entities.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.log4j.Logger;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,9 +44,7 @@ public class RecommenderServiceByRelatedImpl implements RecommenderService{
         List<Integer> recommendedInnerIds = null;
 
         if (user.getRecentlyWatch().isEmpty()){
-            ContentProvider contentProvider = contentProviderService.getById(user.getCpId());
-            List<Movie> mostPopularVods = contentProviderService.getContentProviderMostPopular(contentProvider);
-            recommendedInnerIds = mostPopularVods.stream().map(RecommandEntity::getInnerId).collect(Collectors.toList());
+            recommendedInnerIds = getContentProviderMostPopular(recommendationNumber, user);
 
         }else{
             // Get related From user
@@ -86,8 +83,24 @@ public class RecommenderServiceByRelatedImpl implements RecommenderService{
                     .map(Optional::get)
                     .map(RecommandEntity::getInnerId)
                     .collect(Collectors.toList());
+
+
+            if (recommendedInnerIds.size() < recommendationNumber){
+                Set<Integer> contentProviderMostPopular = Sets.newHashSet(getContentProviderMostPopular(recommendationNumber, user));
+                contentProviderMostPopular.removeAll(recommendedInnerIds);
+                List<Integer> recentlyWatchVodsInnerId = recentlyWatchVods.stream().map(RecommandEntity::getInnerId).collect(Collectors.toList());
+                contentProviderMostPopular.removeAll(recentlyWatchVodsInnerId);
+                recommendedInnerIds.addAll(contentProviderMostPopular);
+            }
         }
 
+        return recommendedInnerIds;
+    }
+
+    private List<Integer> getContentProviderMostPopular(Integer recommendationNumber, User user) {
+        List<Integer> recommendedInnerIds;ContentProvider contentProvider = contentProviderService.getById(user.getCpId());
+        List<Movie> mostPopularVods = contentProviderService.getContentProviderMostPopular(contentProvider, recommendationNumber);
+        recommendedInnerIds = mostPopularVods.stream().map(RecommandEntity::getInnerId).collect(Collectors.toList());
         return recommendedInnerIds;
     }
 
@@ -95,6 +108,4 @@ public class RecommenderServiceByRelatedImpl implements RecommenderService{
     public void updateModel(List<Rating> newRatings) {
 
     }
-
-
 }

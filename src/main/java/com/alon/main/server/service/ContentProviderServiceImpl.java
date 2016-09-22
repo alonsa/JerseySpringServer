@@ -8,8 +8,6 @@ import com.alon.main.server.entities.ContentProvider;
 import com.alon.main.server.entities.Movie;
 import com.alon.main.server.movieProvider.YouTubeClientServiceImpl;
 import com.alon.main.server.rest.ContentProviderData;
-import com.beust.jcommander.internal.Lists;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.math3.util.Pair;
 import org.apache.log4j.Logger;
@@ -18,13 +16,11 @@ import org.joda.time.*;
 import org.joda.time.base.BaseDateTime;
 import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -120,9 +116,9 @@ public class ContentProviderServiceImpl implements ContentProviderService {
     }
 
     @Override
-    public List<Movie> getContentProviderMostPopular(ContentProvider contentProvider){
+    public List<Movie> getContentProviderMostPopular(ContentProvider contentProvider, Integer recommendationNumber){
 
-        Set<Movie> contentProviderVods = getContentProviderVods(contentProvider, true, false, Optional.of(10));
+        Set<Movie> contentProviderVods = getContentProviderVods(contentProvider, true, false, Optional.of(recommendationNumber));
         Optional<Movie> oldestVods = contentProviderVods.stream().sorted((x, y) -> x.getPublishDate().compareTo(y.getPublishDate())).findFirst();
 
 
