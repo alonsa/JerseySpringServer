@@ -98,8 +98,8 @@ public class EpgRestServiceImpl {
 		logger.debug("Response: " + epgs);
 
 		if (logger.isDebugEnabled()){
-			stopWatch.stop();
 			logger.debug("Response time: " + stopWatch.getTime() + " miilis");
+			stopWatch.reset();
 		}
 
 		return epgs;

@@ -59,7 +59,7 @@ public class ContentProviderRestServiceImpl {
 		}
 
 		sb.append("The operation toke : ").append(stopWatch.getTime()/1000).append(" seconds").append("\n");
-		stopWatch.stop();
+		stopWatch.reset();
 
 		return Response.ok(sb.toString()).build();
 	}

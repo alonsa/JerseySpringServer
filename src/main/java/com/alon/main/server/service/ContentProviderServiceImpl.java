@@ -10,6 +10,7 @@ import com.alon.main.server.movieProvider.YouTubeClientServiceImpl;
 import com.alon.main.server.rest.ContentProviderData;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.math3.util.Pair;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -17,10 +18,13 @@ import org.joda.time.*;
 import org.joda.time.base.BaseDateTime;
 import org.mongodb.morphia.Key;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by alon_ss on 6/26/16.
@@ -37,6 +41,9 @@ public class ContentProviderServiceImpl implements ContentProviderService {
 
     private final MovieService movieService;
 
+    private static StopWatch stopWatch = new StopWatch();
+
+
     @Autowired
     public ContentProviderServiceImpl(MovieService movieService, ContentProviderDao contentProviderDao, YouTubeClientServiceImpl youTubeClient) {
         this.movieService = movieService;
@@ -46,6 +53,55 @@ public class ContentProviderServiceImpl implements ContentProviderService {
         logger.debug("#############################################");
         logger.debug("###   ContentProviderServiceImpl is up!   ###");
         logger.debug("#############################################");
+    }
+
+    @Scheduled(fixedRate=3600000) // One hour
+    public void doSomething() {
+
+        stopWatch.reset();
+        stopWatch.start();
+
+        List<ContentProvider> contentProviderList = getAll();
+
+        List<String> contentProvideYoutubeId = contentProviderList.stream()
+                .map(ContentProvider::getYouTubeId)
+                .map(Optional::ofNullable)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+
+        logger.debug("About to parse Youtube contentProvider data for channels Ids:" + contentProvideYoutubeId.stream().collect(Collectors.joining(", ")));
+
+        List<ContentProviderData> contentProviderDataList = contentProvideYoutubeId.parallelStream().map(x -> parseYoutubeContentProvider(x, false)).collect(Collectors.toList());
+
+
+        List<ContentProviderData> filteredContentProviderDataList = contentProviderDataList.stream()
+                .map(Optional::ofNullable)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+
+        filteredContentProviderDataList.forEach(this::toLog);
+
+        logger.debug("The operation toke : " + stopWatch.getTime() / 1000 + " seconds" + "\n");
+
+        stopWatch.reset();
+    }
+
+    private void toLog(ContentProviderData data) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Get content provider data for youTubeId: ").append(data.getYouTubeId()).append("\n");
+        if (data.isNew()){
+            sb.append("A new ");
+        }
+
+        sb.append("content provider with name : ").append(data.getName()).append("\n");
+        sb.append("parsed : ").append(data.getVodNumber()).append(" new vods").append("\n");
+
+        logger.debug(sb.toString());
     }
 
     @Override

@@ -142,11 +142,12 @@ public class RecommenderServiceBySparkImpl implements RecommenderService{
         logger.debug("Set Default Movie List");
         setDefaultMovieList();
 
-        stopWatch.stop();
+
         logger.debug("########################################");
         logger.debug("###   RecommenderService             ###");
         logger.debug("### Service up time : " + Util.millisecondDurationToDate(stopWatch.getTime()) + " ###");
         logger.debug("#################################");
+        stopWatch.reset();
     }
 
     private void setDefaultMovieList() {
